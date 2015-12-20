@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">MyLottery</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_preload">PreloadActivity</string>
+    <string name="preload_loading">Loading...</string>
+    <string name="preload_title">Blink Premium</string>
 </resources>
