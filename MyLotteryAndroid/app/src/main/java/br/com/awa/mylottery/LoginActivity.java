@@ -380,7 +380,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
 
             if (success) {
+                // go for the home activity
+                Intent home = new Intent(LoginActivity.this, HomeActivity.class);
+                startActivity(home);
+
+                // kill this activity, so that it is not in back button anymore
                 finish();
+
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
