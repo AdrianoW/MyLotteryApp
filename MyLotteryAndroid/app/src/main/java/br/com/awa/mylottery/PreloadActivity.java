@@ -110,16 +110,19 @@ public class PreloadActivity extends AppCompatActivity {
             finish();
         }
 
+        /*
+        *  Decide where to go based on being logged or not
+        * */
         private Intent getNextActivityIntent()
         {
-            boolean logged = true;
+            boolean logged = Utility.getPreferredLocation(getApplicationContext());
 
             // check if the client is logged
             if (logged == true) {
                 return new Intent(getApplicationContext(), HomeActivity.class);
             } else {
                 // client is logged, go for the main screen
-                return new Intent(getApplicationContext(), HomeActivity.class);
+                return new Intent(getApplicationContext(), LoginActivity.class);
             }
         }
     }
