@@ -8,20 +8,20 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import br.com.awa.mylottery.AvailableCouponsFragment.OnListFragmentInteractionListener;
+import br.com.awa.mylottery.AvailableCouponsFragment.OnAvailableCouponsInteraction;
 import br.com.awa.mylottery.dummy.DummyContent.DummyItem;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link DummyItem} and makes a call to the
- * specified {@link OnListFragmentInteractionListener}.
+ * specified {@link OnAvailableCouponsInteraction}.
  * TODO: Replace the implementation with code for your data type.
  */
 public class AvailableCouponsRecyclerViewAdapter extends RecyclerView.Adapter<AvailableCouponsRecyclerViewAdapter.ViewHolder> {
 
     private final List<DummyItem> mValues;
-    private final OnListFragmentInteractionListener mListener;
+    private final OnAvailableCouponsInteraction mListener;
 
-    public AvailableCouponsRecyclerViewAdapter(List<DummyItem> items, OnListFragmentInteractionListener listener) {
+    public AvailableCouponsRecyclerViewAdapter(List<DummyItem> items, OnAvailableCouponsInteraction listener) {
         mValues = items;
         mListener = listener;
     }
@@ -45,7 +45,7 @@ public class AvailableCouponsRecyclerViewAdapter extends RecyclerView.Adapter<Av
                 if (null != mListener) {
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that an item has been selected.
-                    mListener.onListFragmentInteraction(holder.mItem);
+                    mListener.onAvailableCouponsInteraction(holder.mItem);
                 }
             }
         });

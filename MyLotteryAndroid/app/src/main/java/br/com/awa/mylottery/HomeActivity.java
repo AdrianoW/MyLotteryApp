@@ -5,10 +5,14 @@ import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class HomeActivity extends AppCompatActivity {
+import br.com.awa.mylottery.dummy.DummyContent;
+
+public class HomeActivity extends AppCompatActivity
+        implements AvailableCouponsFragment.OnAvailableCouponsInteraction{
 
     // Declaring Your View and Variables
     Toolbar toolbar;
@@ -86,5 +90,16 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onAvailableCouponsInteraction(DummyContent.DummyItem item) {
+        Log.v("TESTE", item.content.toString());
+
+        // open the detail activity
+        Intent availableDetail = new Intent(this, AvailableCouponDetail.class)
+                .putExtra( AvailableCouponDetail.PARAM_ID, item.toString());
+        startActivity(availableDetail);
+
     }
 }

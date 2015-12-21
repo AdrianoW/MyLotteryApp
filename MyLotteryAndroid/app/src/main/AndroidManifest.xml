@@ -34,7 +34,16 @@
             android:label="@string/title_activity_settings" />
         <activity
             android:name=".RegisterActivity"
-            android:label="@string/title_activity_register"></activity>
+            android:label="@string/title_activity_register" />
+        <activity
+            android:name=".AvailableCouponDetail"
+            android:label="@string/title_activity_available_coupon_detail"
+            android:parentActivityName=".HomeActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="br.com.awa.mylottery.HomeActivity" />
+        </activity>
     </application>
 
 </manifest>

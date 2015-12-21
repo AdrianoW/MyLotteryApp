@@ -88,4 +88,5 @@
     <string name="register_terms">When clicking the button above, you agree with the app\'s &lt;a href=\"http://www.google.com\">Service terms&lt;/a>.</string>
     <string name="error_password_dont_match">passwords doesn\'t match</string>
     <string name="error_name">Must enter a name</string>
+    <string name="title_activity_available_coupon_detail">AvailableCouponDetail</string>
 </resources>
