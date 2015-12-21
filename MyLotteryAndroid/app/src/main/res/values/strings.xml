@@ -81,4 +81,11 @@
     <string name="pref_logged_key">pref_logged</string>
     <string name="pref_title_logged">Logged flag</string>
     <string name="title_activity_register">Register</string>
+    <string name="prompt_name">Name</string>
+    <string name="regiter_text">Required fields</string>
+    <string name="register_title">Sign in</string>
+    <string name="prompt_password_confirm">Confirm Password</string>
+    <string name="register_terms">When clicking the button above, you agree with the app\'s &lt;a href=\"http://www.google.com\">Service terms&lt;/a>.</string>
+    <string name="error_password_dont_match">passwords doesn\'t match</string>
+    <string name="error_name">Must enter a name</string>
 </resources>
