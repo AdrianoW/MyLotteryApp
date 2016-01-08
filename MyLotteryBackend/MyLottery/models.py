@@ -17,6 +17,9 @@ class StatusCampaigns(models.Model):
     # admin info
     created = models.DateTimeField(auto_now_add=True)
 
+    def __unicode__(self):
+        return '%s' % self.status
+
 
 class StatusTypes(models.Model):
     """
@@ -28,6 +31,9 @@ class StatusTypes(models.Model):
 
     # admin info
     created = models.DateTimeField(auto_now_add=True)
+
+    def __unicode__(self):
+        return '%s' % self.status
 
 
 class StatusTickets(models.Model):
@@ -41,6 +47,9 @@ class StatusTickets(models.Model):
     # admin info
     created = models.DateTimeField(auto_now_add=True)
 
+    def __unicode__(self):
+        return '%s' % self.status
+
 
 class StatusMethods(models.Model):
     """
@@ -52,6 +61,9 @@ class StatusMethods(models.Model):
 
     # admin info
     created = models.DateTimeField(auto_now_add=True)
+
+    def __unicode__(self):
+        return '%s' % self.status
 
 
 class StatusPurchases(models.Model):
@@ -65,17 +77,8 @@ class StatusPurchases(models.Model):
     # admin info
     created = models.DateTimeField(auto_now_add=True)
 
-
-class Languages(models.Model):
-    """
-    Language of the user
-    """
-
-    # the fields
-    languagues = models.CharField(max_length=45, blank=False)
-
-    # admin info
-    created = models.DateTimeField(auto_now_add=True)
+    def __unicode__(self):
+        return '%s' % self.status
 
 
 class Languages(models.Model):
@@ -84,10 +87,13 @@ class Languages(models.Model):
     """
 
     # the fields
-    languagues = models.CharField(max_length=45, blank=False)
+    languages = models.CharField(max_length=45, blank=False)
 
     # admin info
     created = models.DateTimeField(auto_now_add=True)
+
+    def __unicode__(self):
+        return '%s' % self.languages
 
 
 ##############################
@@ -117,7 +123,7 @@ class Tickets(models.Model):
 
 class Purchases(models.Model):
     # the fields
-    ticket = models.ForeignKey('Tickets')
+    ticket = models.ForeignKey('Tickets', related_name='purchases')
     user = models.ForeignKey('auth.User', related_name='snippets')
     date = models.DateTimeField(auto_now_add=True)
     method = models.ForeignKey('StatusMethods')
