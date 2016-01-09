@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
-import django.contrib.auth
+import django.contrib.auth as auth
 
 
 ##############################
@@ -57,13 +57,13 @@ class StatusMethods(models.Model):
     """
 
     # the fields
-    status = models.CharField(max_length=45, blank=False)
+    method = models.CharField(max_length=45, blank=False)
 
     # admin info
     created = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
-        return '%s' % self.status
+        return '%s' % self.method
 
 
 class StatusPurchases(models.Model):
