@@ -23,7 +23,8 @@ class IsOwnerOrAdmin(permissions.BasePermission):
     """
     def has_object_permission(self, request, view, obj):
         # Instance must have an attribute named `owner`.
-        return (obj.user == request.user) or (request.user.is_superuser)
+        return (obj.user == request.user) or request.user.is_superuser
+
 
 class IsAccountAdminOrReadOnly(permissions.BasePermission):
     """
@@ -38,3 +39,10 @@ class IsAccountAdminOrReadOnly(permissions.BasePermission):
 
         # return if is user is superuser
         return request.user.is_superuser
+
+
+class IsAuthenticatedOrCreate(permissions.IsAuthenticated):
+    def has_permission(self, request, view):
+        if request.method == 'POST':
+            return True
+        return super(IsAuthenticatedOrCreate, self).has_permission(request, view)

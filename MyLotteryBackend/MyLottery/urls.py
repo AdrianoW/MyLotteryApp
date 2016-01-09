@@ -11,5 +11,6 @@ router.register(r'purchases', views.PurchasesViewSet)
 
 # register the router
 urlpatterns = [
+    url(r'^sign_up/$', views.SignUp.as_view(), name="sign_up"),
     url(r'^', include(router.urls)),
     ]

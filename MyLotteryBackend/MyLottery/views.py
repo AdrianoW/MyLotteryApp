@@ -4,8 +4,11 @@ from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from MyLottery.models import Campaigns, Tickets, Purchases
-from MyLottery.serializers import CampaignsSerializer, TicketsSerializer, PurchaseSerializer
+from MyLottery.serializers import CampaignsSerializer, TicketsSerializer, \
+    PurchaseSerializer, SignUpSerializer
 from MyLottery.permissions import *
+from rest_framework import generics
+from django.contrib.auth.models import User
 
 
 class CampaignViewSet(ModelViewSet):
@@ -33,3 +36,9 @@ class PurchasesViewSet(ModelViewSet):
     queryset = Purchases.objects.all()
     serializer_class = PurchaseSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+
+
+class SignUp(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = SignUpSerializer
+    permission_classes = (IsAuthenticatedOrCreate,)
