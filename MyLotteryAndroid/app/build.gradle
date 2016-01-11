@@ -16,7 +16,13 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        all {
+            buildConfigField 'String', 'ANDROID_CLIENT_ID', MyLotteryAndroidClientId
+            buildConfigField 'String', 'ANDROID_CLIENT_KEY', MyLotteryAndroidClientKey
+
+        }
     }
+
 }
 
 dependencies {
@@ -26,4 +32,5 @@ dependencies {
     compile 'com.android.support:design:23.1.1'
     compile 'com.android.support:support-v4:23.1.1'
     compile 'com.android.support:recyclerview-v7:23.1.1'
+    compile 'com.squareup.retrofit2:retrofit:2.0.0-beta3'
 }
