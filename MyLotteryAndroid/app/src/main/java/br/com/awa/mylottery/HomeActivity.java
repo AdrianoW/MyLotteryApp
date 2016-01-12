@@ -98,7 +98,7 @@ public class HomeActivity extends AppCompatActivity
 
         // open the detail activity
         Intent availableDetail = new Intent(this, AvailableCouponDetail.class)
-                .putExtra( AvailableCouponDetail.PARAM_ID, item.toString());
+                .putExtra( AvailableCouponDetail.PARAM_ID, item.id);
         startActivity(availableDetail);
 
     }

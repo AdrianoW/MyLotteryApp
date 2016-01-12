@@ -34,6 +34,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.awa.mylottery.backends.MyLotteryBackendServer;
+
 import static android.Manifest.permission.READ_CONTACTS;
 
 /**
@@ -174,7 +176,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
         String passwordConfirm = mPasswordConfirmView.getText().toString();
-        String name = mName.getText().toString();
+        String userName = mName.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
@@ -194,7 +196,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         }
 
         // check if a name was set
-        if (TextUtils.isEmpty(name)) {
+        if (TextUtils.isEmpty(userName)) {
             mName.setError(getString(R.string.error_name));
         }
 
@@ -217,7 +219,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
+            mAuthTask = new UserLoginTask(userName, password, email);
             mAuthTask.execute((Void) null);
         }
     }
@@ -359,33 +361,27 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
 
         private final String mEmail;
         private final String mPassword;
+        private final MyLotteryBackendServer mApi;
+        private final String mUserName;
 
-        UserLoginTask(String email, String password) {
+        UserLoginTask(String userName, String password, String email) {
+            mUserName = userName;
             mEmail = email;
             mPassword = password;
+
+            // TODO: put in a global place
+            mApi = new MyLotteryBackendServer();
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
+            MyLotteryBackendServer.UserCreation user = mApi.register(RegisterActivity.this,
+                    mUserName, mPassword, mEmail);
 
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
+            return !(user == null);
 
-            // TODO: register the new account here.
-            return true;
         }
 
         @Override

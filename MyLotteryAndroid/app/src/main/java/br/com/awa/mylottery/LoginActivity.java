@@ -52,6 +52,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "foo@example.com:hello", "bar@example.com:world"
     };
+    public static final String ARG_ACCOUNT_TYPE = "ACCOUNT_TYPE";
+    public static final String ARG_AUTH_TYPE = "AUTH_TYPE";
+    public static final String ARG_IS_ADDING_NEW_ACCOUNT = "IS_ADDING_ACCOUNT";
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
