@@ -34,8 +34,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.com.awa.mylottery.backends.MyLotteryBackendServer;
-
 import static android.Manifest.permission.READ_CONTACTS;
 
 /**
@@ -55,10 +53,6 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "foo@example.com:hello", "bar@example.com:world"
     };
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private UserLoginTask mAuthTask = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -164,9 +158,6 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
 
         // Reset errors.
         mEmailView.setError(null);
@@ -219,8 +210,8 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(userName, password, email);
-            mAuthTask.execute((Void) null);
+            //mAuthTask = new UserLoginTask(userName, password, email);
+            //mAuthTask.execute((Void) null);
         }
     }
 
@@ -353,55 +344,5 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         }
     }
 
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mEmail;
-        private final String mPassword;
-        private final MyLotteryBackendServer mApi;
-        private final String mUserName;
-
-        UserLoginTask(String userName, String password, String email) {
-            mUserName = userName;
-            mEmail = email;
-            mPassword = password;
-
-            // TODO: put in a global place
-            mApi = new MyLotteryBackendServer();
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
-            MyLotteryBackendServer.UserCreation user = mApi.register(RegisterActivity.this,
-                    mUserName, mPassword, mEmail);
-
-            return !(user == null);
-
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (success) {
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
-        }
-    }
 }
 

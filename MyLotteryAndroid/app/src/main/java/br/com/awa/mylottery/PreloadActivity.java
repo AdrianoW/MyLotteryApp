@@ -18,51 +18,21 @@ public class PreloadActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preload);
 
+        // play the sound and wait a little to show info
         new LoadViewTask().execute();
-
-        // create a media player to play later the sound
-        //mPlayer = mPlayer.create(getApplicationContext(), R.raw.preload2);
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
 
-        // play the sound
-        /*Log.v(LOG_TAG, "Comecou");
-        mPlayer.start();
-        while (mPlayer.isPlaying()){}
-
-        Log.v(LOG_TAG, "Tocou o som");
-        mPlayer.release();
-        mPlayer = null;
-
-        // go for the next activity
-        Intent intent = getNextActivityIntent();
-        startActivity(intent);*/
         super.onPostCreate(savedInstanceState);
     }
 
-/*    @Override
-    protected void() {
-        // wait the screen to appear TODO: put in async task
-        //SystemClock.sleep(100);
 
-        // play the sound
-        Log.v(LOG_TAG, "Comecou");
-        mPlayer.start();
-        while (mPlayer.isPlaying()){}
-
-        Log.v(LOG_TAG, "Tocou o som");
-        mPlayer.release();
-        mPlayer = null;
-
-        // go for the next activity
-        Intent intent = getNextActivityIntent();
-        startActivity(intent);
-
-        super.onResume();
-    }*/
-
+    /*
+    * Async task to play the sound and wait a little
+    *
+     */
     private class LoadViewTask extends AsyncTask<Void, Integer, Void> {
 
         //Before running code in separate thread
@@ -74,22 +44,21 @@ public class PreloadActivity extends AppCompatActivity {
         //The code to be executed in a background thread.
         @Override
         protected Void doInBackground(Void... params) {
-            /* This is just a code that delays the thread execution 4 times,
-             * during 850 milliseconds and updates the current progress. This
-             * is where the code that is going to be executed on a background
-             * thread must be placed.
-             */
+            /* This is just a code that delays the thread execution
+             * during 200 milliseconds */
             try {
                 //Get the current thread's token
                 synchronized (this) {
-                    this.wait(200);
+
 
                     // play the sound
                     MediaPlayer mPlayer = MediaPlayer.create(getApplicationContext(), R.raw.preload2);
                     Log.v(LOG_TAG, "Comecou");
                     mPlayer.start();
+                    this.wait(200);
                     while (mPlayer.isPlaying()){}
 
+                    // clean things
                     Log.v(LOG_TAG, "Tocou o som");
                     mPlayer.release();
                     mPlayer = null;

@@ -3,13 +3,11 @@ package br.com.awa.mylottery.backends;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -80,12 +78,12 @@ public class MyLotteryBackend {
     * @ password: password
     * @ callback: implements interface VolleyCallback
     */
-    public void login(String username, String password, final VolleyCallback callback) {
+    public void login(String email, String password, final VolleyCallback callback) {
         // define the endpoint url and create the json body
-        String url = URL_BASE + "api-token-auth/";
+        String url = URL_BASE + "rest-auth/login/";
         JSONObject jsonBody = new JSONObject();
         try {
-            jsonBody.put("username", username);
+            jsonBody.put("email", email);
             jsonBody.put("password", password);
         }catch (JSONException e) {
             e.printStackTrace();

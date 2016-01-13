@@ -236,9 +236,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         mAuthTask = null;
                         showProgress(false);
 
-                        String token = result.getString("token");
+                        String token = result.getString("key");
 
                         if (null != token) {
+                            // save the token information into the account
+
                             // go for the home activity
                             Intent home = new Intent(LoginActivity.this, HomeActivity.class);
                             startActivity(home);

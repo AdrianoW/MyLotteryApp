@@ -89,4 +89,5 @@
     <string name="error_password_dont_match">passwords doesn\'t match</string>
     <string name="error_name">Must enter a name</string>
     <string name="title_activity_available_coupon_detail">AvailableCouponDetail</string>
+    <string name="authenticator_account_name">My Lottery Account</string>
 </resources>
