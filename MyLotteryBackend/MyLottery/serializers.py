@@ -77,18 +77,20 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    language = serializers.PrimaryKeyRelatedField(queryset=Languages.objects.all())
+    # status = serializers.PrimaryKeyRelatedField(queryset=.objects.all())
+
     class Meta:
         model = User
-        fields = ('id', 'password', 'email', 'name', 'language', 'location', '')
+        fields = ('id', 'password', 'email', 'name', 'language', 'location')
         write_only_fields = ('password',)
         read_only_fields = ('id',)
 
     def create(self, validated_data):
         user = User.objects.create(
-            username=validated_data['username'],
+            username=validated_data['name'],
             email=validated_data['email'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name']
+            name=validated_data['name']
         )
 
         user.set_password(validated_data['password'])
