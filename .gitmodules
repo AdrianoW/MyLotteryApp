@@ -1,0 +1,4 @@
+[submodule "MyLotteryAndroid/volley"]
+	path = MyLotteryAndroid/volley
+	url = https://android.googlesource.com/platform/frameworks/volley
+	branch = master

@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,9 +30,18 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import br.com.awa.mylottery.backends.MyLotteryBackend;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -66,6 +76,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mProgressView;
     private View mLoginFormView;
     private View mRegisterView;
+
+    public static final String TAG = MyLotteryBackend.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +119,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 startActivity(intent);
             }
         });
+
+        // register context to the Backend
+        MyLotteryBackend.getInstance().setContext(getApplicationContext());
     }
 
     private void populateAutoComplete() {
@@ -188,7 +203,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
 
         // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
+        /*if (TextUtils.isEmpty(email)) {
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
@@ -196,7 +211,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
-        }
+        }*/
 
         if (cancel) {
             // There was an error; don't attempt login and focus the first
@@ -206,8 +221,57 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+
+
+            //mAuthTask = new UserLoginTask(email, password);
+            //mAuthTask.execute((Void) null);
+            MyLotteryBackend.getInstance().login(email, password, new MyLotteryBackend.VolleyCallback() {
+                @Override
+                public void onResponse(JSONObject result) {
+                    Log.d(TAG, result.toString());
+
+                    try {
+                        // Parsing json object response
+                        // response will be a json object
+                        mAuthTask = null;
+                        showProgress(false);
+
+                        String token = result.getString("token");
+
+                        if (null != token) {
+                            // go for the home activity
+                            Intent home = new Intent(LoginActivity.this, HomeActivity.class);
+                            startActivity(home);
+
+                            // kill this activity, so that it is not in back button anymore
+                            finish();
+
+                        } else {
+                            mPasswordView.setError(getString(R.string.error_incorrect_password));
+                            mPasswordView.requestFocus();
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getApplicationContext(),
+                                "Error: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+
+                    }
+                }
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    mAuthTask = null;
+                    showProgress(false);
+
+                    String errorMessage = new String(error.networkResponse.data);
+
+                    Log.d(TAG, "Error: " + error.networkResponse.statusCode + errorMessage);
+                    Toast.makeText(getApplicationContext(),
+                            errorMessage, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
