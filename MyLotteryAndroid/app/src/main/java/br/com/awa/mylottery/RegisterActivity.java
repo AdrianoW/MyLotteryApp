@@ -4,21 +4,9 @@ import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.LoaderManager.LoaderCallbacks;
-import android.content.ContentResolver;
-import android.content.CursorLoader;
 import android.content.Intent;
-import android.content.Loader;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Build.VERSION;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.TextUtils;
@@ -28,7 +16,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -40,32 +27,16 @@ import com.android.volley.VolleyError;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import br.com.awa.mylottery.backends.MyLotteryBackend;
-import static br.com.awa.mylottery.LoginActivity.PARAM_USER_PASS;
-import static br.com.awa.mylottery.LoginActivity.ARG_ACCOUNT_TYPE;
 
-import static android.Manifest.permission.READ_CONTACTS;
+import static br.com.awa.mylottery.LoginActivity.ARG_ACCOUNT_TYPE;
+import static br.com.awa.mylottery.LoginActivity.PARAM_USER_PASS;
 
 /**
- * A login screen that offers login via email/password.
+ * A Register screen that offers login via email/password.
  */
-public class RegisterActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class RegisterActivity extends AppCompatActivity{
 
-    /**
-     * Id to identity READ_CONTACTS permission request.
-     */
-    private static final int REQUEST_READ_CONTACTS = 0;
-
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
     private static final String TAG = RegisterActivity.class.getSimpleName();
 
     // UI references.
@@ -85,14 +56,12 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.register_email);
-        populateAutoComplete();
-
         mPasswordView = (EditText) findViewById(R.id.register_password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
+                    attemptRegister();
                     return true;
                 }
                 return false;
@@ -106,11 +75,12 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         // save the name view
         mName = (EditText) findViewById(R.id.register_name);
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.register_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+        // Register 
+        Button mRegisterButton = (Button) findViewById(R.id.register_button);
+        mRegisterButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                attemptLogin();
+                attemptRegister();
             }
         });
 
@@ -120,62 +90,12 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         mAccountType = getIntent().getStringExtra(ARG_ACCOUNT_TYPE);
     }
 
-    private void populateAutoComplete() {
-        if (!mayRequestContacts()) {
-            return;
-        }
-
-        if (VERSION.SDK_INT >= 14) {
-            // Use ContactsContract.Profile (API 14+)
-            getLoaderManager().initLoader(0, null, this);
-        } else if (VERSION.SDK_INT >= 8) {
-            // Use AccountManager (API 8+)
-            new SetupEmailAutoCompleteTask().execute(null, null);
-        }
-    }
-
-    private boolean mayRequestContacts() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return true;
-        }
-        if (checkSelfPermission(READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(mEmailView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new View.OnClickListener() {
-                        @Override
-                        @TargetApi(Build.VERSION_CODES.M)
-                        public void onClick(View v) {
-                            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-                        }
-                    });
-        } else {
-            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-        }
-        return false;
-    }
-
     /**
-     * Callback received when a permissions request has been completed.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_READ_CONTACTS) {
-            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                populateAutoComplete();
-            }
-        }
-    }
-
-
-    /**
-     * Attempts to sign in or register the account specified by the login form.
+     * Attempts to register the account specified by the login form.
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    private void attemptLogin() {
+    private void attemptRegister() {
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
@@ -227,66 +147,81 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            //mAuthTask = new UserLoginTask(userName, password, email);
-            //mAuthTask.execute((Void) null);
-            MyLotteryBackend.getInstance().register(email, password, new MyLotteryBackend.VolleyCallback() {
-                @Override
-                public void onResponse(JSONObject result) {
-                    Log.d(TAG, result.toString());
 
-                    try {
-                        // Parsing json object response
-                        // response will be a json object
-                        showProgress(false);
+            // make the call
+            MyLotteryBackend
+                    .getInstance()
+                    .register(email,
+                            password,
+                            new MyLotteryBackend.VolleyCallback() {
+                                @Override
+                                public void onResponse(JSONObject result) {
+                                    Log.d(TAG, result.toString());
 
-                        // get the returned token
-                        String token = result.getString("key");
+                                    try {
+                                        // Parsing json object response
+                                        // response will be a json object
+                                        showProgress(false);
 
-                        // create a bundle to to be used on account creation
-                        Bundle data = new Bundle();
-                        data.putString(AccountManager.KEY_ACCOUNT_NAME, email);
-                        data.putString(AccountManager.KEY_ACCOUNT_TYPE, mAccountType);
-                        data.putString(AccountManager.KEY_AUTHTOKEN, token);
-                        data.putString(PARAM_USER_PASS, password);
+                                        // get the returned token
+                                        String token = result.getString("key");
 
-                        final Intent res = new Intent();
-                        res.putExtras(data);
-                        setResult(RESULT_OK, res);
-                        finish();
+                                        // create a bundle to to be used on account creation
+                                        Bundle data = new Bundle();
+                                        data.putString(AccountManager.KEY_ACCOUNT_NAME, email);
+                                        data.putString(AccountManager.KEY_ACCOUNT_TYPE, mAccountType);
+                                        data.putString(AccountManager.KEY_AUTHTOKEN, token);
+                                        data.putString(PARAM_USER_PASS, password);
 
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(),
-                                "Error: " + e.getMessage(),
-                                Toast.LENGTH_LONG).show();
+                                        final Intent res = new Intent();
+                                        res.putExtras(data);
+                                        setResult(RESULT_OK, res);
+                                        finish();
 
-                    }
-                }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                        Toast.makeText(getApplicationContext(),
+                                                "Error: " + e.getMessage(),
+                                                Toast.LENGTH_LONG).show();
 
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    showProgress(false);
+                                    }
+                                }
 
-                    String errorMessage = new String(error.networkResponse.data);
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    showProgress(false);
 
-                    Log.d(TAG, "Error: " + error.networkResponse.statusCode + errorMessage);
-                    Toast.makeText(getApplicationContext(),
-                            errorMessage, Toast.LENGTH_SHORT).show();
-                }
-            });
+                                    String errorMessage = new String(error.networkResponse.data);
+
+                                    Log.d(TAG, "Error: " + error.networkResponse.statusCode + errorMessage);
+                                    Toast.makeText(getApplicationContext(),
+                                            errorMessage, Toast.LENGTH_SHORT).show();
+                                }
+                            });
         }
     }
 
+    /**
+     * Simple email validation before posting to the server
+     * @param email: must contain at least a @ symbol
+     * @return
+     */
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
         return email.contains("@");
     }
 
+    /**
+     * The password must be at least 6 characters long
+     * @param password
+     * @return
+     */
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 4;
+        return password.length() >= 6;
     }
 
+    /**
+     * As this is called with result, tell the parent that the user canceled the action
+     */
     @Override
     public void onBackPressed() {
         setResult(RESULT_CANCELED);
@@ -328,89 +263,5 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return new CursorLoader(this,
-                // Retrieve data rows for the device user's 'profile' contact.
-                Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI,
-                        ContactsContract.Contacts.Data.CONTENT_DIRECTORY), ProfileQuery.PROJECTION,
-
-                // Select only email addresses.
-                ContactsContract.Contacts.Data.MIMETYPE +
-                        " = ?", new String[]{ContactsContract.CommonDataKinds.Email
-                .CONTENT_ITEM_TYPE},
-
-                // Show primary email addresses first. Note that there won't be
-                // a primary email address if the user hasn't specified one.
-                ContactsContract.Contacts.Data.IS_PRIMARY + " DESC");
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        List<String> emails = new ArrayList<>();
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            emails.add(cursor.getString(ProfileQuery.ADDRESS));
-            cursor.moveToNext();
-        }
-
-        addEmailsToAutoComplete(emails);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
-
-    }
-
-    private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
-        //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(RegisterActivity.this,
-                        android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
-
-        mEmailView.setAdapter(adapter);
-    }
-
-    private interface ProfileQuery {
-        String[] PROJECTION = {
-                ContactsContract.CommonDataKinds.Email.ADDRESS,
-                ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
-        };
-
-        int ADDRESS = 0;
-        int IS_PRIMARY = 1;
-    }
-
-    /**
-     * Use an AsyncTask to fetch the user's email addresses on a background thread, and update
-     * the email text field with results on the main UI thread.
-     */
-    class SetupEmailAutoCompleteTask extends AsyncTask<Void, Void, List<String>> {
-
-        @Override
-        protected List<String> doInBackground(Void... voids) {
-            ArrayList<String> emailAddressCollection = new ArrayList<>();
-
-            // Get all emails from the user's contacts and copy them to a list.
-            ContentResolver cr = getContentResolver();
-            Cursor emailCur = cr.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null,
-                    null, null, null);
-            while (emailCur.moveToNext()) {
-                String email = emailCur.getString(emailCur.getColumnIndex(ContactsContract
-                        .CommonDataKinds.Email.DATA));
-                emailAddressCollection.add(email);
-            }
-            emailCur.close();
-
-            return emailAddressCollection;
-        }
-
-        @Override
-        protected void onPostExecute(List<String> emailAddressCollection) {
-            addEmailsToAutoComplete(emailAddressCollection);
-        }
-    }
-
 }
 

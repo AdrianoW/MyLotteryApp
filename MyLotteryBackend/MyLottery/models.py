@@ -18,7 +18,7 @@ class StatusCampaigns(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
-        return '%s' % self.status
+        return '%d - %s' % (self.id, self.status)
 
 
 class StatusTypes(models.Model):
@@ -103,7 +103,7 @@ class Campaigns(models.Model):
     name = models.CharField(max_length=45, blank=False)
     prize_a = models.CharField(max_length=45, blank=False)
     prize_b = models.CharField(max_length=45, blank=False, default='')
-    prize_c = models.CharField(max_length=45, blank=False, default='')
+    prize_c = models.CharField(max_length=45, blank=True, default='')
     status = models.ForeignKey('StatusCampaigns')
 
     # admin info
@@ -113,19 +113,29 @@ class Campaigns(models.Model):
     class Meta:
         ordering = ('created',)
 
+    def __unicode__(self):
+        return '%d - %s' % (self.id, self.name)
+
 
 class Tickets(models.Model):
     # the fields
     campaign = models.ForeignKey('Campaigns', related_name='tickets')
     type = models.ForeignKey('StatusTypes')
     status = models.ForeignKey('StatusTickets')
+    purchase = models.ForeignKey('Purchases', null=True, blank=True, default='')
+
+    def __unicode__(self):
+        return '%d - da campanha: %s' % (self.id, self.campaign)
 
 
 class Purchases(models.Model):
     # the fields
     ticket = models.ForeignKey('Tickets', related_name='purchases')
-    user = models.ForeignKey('auth.User', related_name='snippets')
+    user = models.ForeignKey('auth.User', related_name='purchases')
     date = models.DateTimeField(auto_now_add=True)
     method = models.ForeignKey('StatusMethods')
     token = models.CharField(max_length=45, blank=False)
     status = models.ForeignKey('StatusPurchases')
+
+    def __unicode__(self):
+        return '%d - Nr ticket: %s' % (self.id, self.ticket_id)

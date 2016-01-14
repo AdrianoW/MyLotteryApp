@@ -9,10 +9,13 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import br.com.awa.mylottery.backends.MyLotteryBackend;
 
-
+/**
+* Activity responsible for showing the splash screen and getting the token for communication
+*/
 public class PreloadActivity extends AppCompatActivity {
 
     private static String LOG_TAG = PreloadActivity.class.getSimpleName();
@@ -28,28 +31,19 @@ public class PreloadActivity extends AppCompatActivity {
         mAccountManager = AccountManager.get(this);
         mAccountType = getString(R.string.authenticator_account_type);
 
-        // play the sound and wait a little to show info
+        // play the sound in another thread and wait a little to show info
         new LoadViewTask().execute();
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
-
         super.onPostCreate(savedInstanceState);
     }
 
-
-    /*
+    /**
     * Async task to play the sound and wait a little
-    *
-     */
+    **/
     private class LoadViewTask extends AsyncTask<Void, Integer, Void> {
-
-        //Before running code in separate thread
-        @Override
-        protected void onPreExecute() {
-
-        }
 
         //The code to be executed in a background thread.
         @Override
@@ -60,18 +54,16 @@ public class PreloadActivity extends AppCompatActivity {
                 //Get the current thread's token
                 synchronized (this) {
 
-
                     // play the sound
                     MediaPlayer mPlayer = MediaPlayer.create(getApplicationContext(), R.raw.preload2);
-                    Log.v(LOG_TAG, "Comecou");
+                    Log.d(LOG_TAG, "Sound started");
                     mPlayer.start();
                     this.wait(200);
-                    while (mPlayer.isPlaying()){}
+                    while (mPlayer.isPlaying()) {}
 
                     // clean things
-                    Log.v(LOG_TAG, "Tocou o som");
+                    Log.d(LOG_TAG, "Sound Finished");
                     mPlayer.release();
-                    mPlayer = null;
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -87,46 +79,43 @@ public class PreloadActivity extends AppCompatActivity {
             goToNextActivity();
         }
 
-        /*
-        *  Decide where to go based on being logged or not
+        /**
+        *  Go to the main activity if the user is logged. Else it will call the login screen
         * */
         private void goToNextActivity()
         {
-//            boolean logged = Utility.getPreferredLocation(getApplicationContext());
-//
-//            // check if the client is logged
-//            if (logged == true) {
-//                return new Intent(getApplicationContext(), HomeActivity.class);
-//            } else {
-//                // client is logged, go for the main screen
-//                return new Intent(getApplicationContext(), LoginActivity.class);
-//            }
             // check if there is an account created
-            final AccountManagerFuture<Bundle> future = mAccountManager.getAuthTokenByFeatures(
-                    mAccountType, MyLotteryBackend.getInstance().ACCOUNT_ACESS, null,
-                    PreloadActivity.this, null, null,
-                    new AccountManagerCallback<Bundle>() {
-                        @Override
-                        public void run(AccountManagerFuture<Bundle> future) {
-                            Bundle bnd = null;
-                            try {
-                                bnd = future.getResult();
-                                MyLotteryBackend.getInstance().setToken(bnd.getString(AccountManager.KEY_AUTHTOKEN));
+            final AccountManagerFuture<Bundle> future = mAccountManager
+                    .getAuthTokenByFeatures(mAccountType,
+                            MyLotteryBackend.ACCOUNT_ACESS,
+                            null,
+                            PreloadActivity.this,
+                            null,
+                            null,
+                            new AccountManagerCallback<Bundle>() {
+                                @Override
+                                public void run(AccountManagerFuture<Bundle> future) {
+                                    Bundle bnd;
+                                    try {
+                                        // get the token. If it does not exists, will call the login activity
+                                        bnd = future.getResult();
+                                        MyLotteryBackend.getInstance().setToken(bnd.getString(AccountManager.KEY_AUTHTOKEN));
+                                        Log.d(LOG_TAG, "GetTokenForAccount Bundle is " + bnd);
 
-                                //showMessage(((authtoken != null) ? "SUCCESS!\ntoken: " + authtoken : "FAIL"));
-                                Log.d(LOG_TAG, "GetTokenForAccount Bundle is " + bnd);
+                                        // starts the app
+                                        startActivity(new Intent(getApplicationContext(), HomeActivity.class));
 
-                                // starts the app
-                                startActivity(new Intent(getApplicationContext(), HomeActivity.class));
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                finish();
-                            }
-                        }
-                    }
-                    , null);
+                                    } catch (Exception e) {
+                                        // an error occurred. quit with a toast
+                                        e.printStackTrace();
+                                        finish();
+                                        Toast.makeText(getApplicationContext(),
+                                                "User Cancelled Operation",
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            },
+                            null);
         }
     }
-
 }

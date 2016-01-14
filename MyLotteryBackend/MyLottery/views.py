@@ -7,9 +7,8 @@ from MyLottery.models import Campaigns, Tickets, Purchases
 from MyLottery.serializers import CampaignsSerializer, TicketsSerializer, \
     PurchaseSerializer
 from MyLottery.permissions import *
-from rest_framework import generics
-from django.contrib.auth.models import User
 
+import uuid
 
 class CampaignViewSet(ModelViewSet):
     """
@@ -17,7 +16,7 @@ class CampaignViewSet(ModelViewSet):
     """
     queryset = Campaigns.objects.all()
     serializer_class = CampaignsSerializer
-    permission_classes = [IsAuthenticated, IsAccountAdminOrReadOnly]
+    permission_classes = (IsAuthenticated, Vw_IsAdminOrReadOnly,)
 
 
 class TicketsViewSet(ModelViewSet):
@@ -26,7 +25,7 @@ class TicketsViewSet(ModelViewSet):
     """
     queryset = Tickets.objects.all()
     serializer_class = TicketsSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated, Obj_IsOwnerOrAdmin)
 
 
 class PurchasesViewSet(ModelViewSet):
@@ -35,4 +34,17 @@ class PurchasesViewSet(ModelViewSet):
     """
     queryset = Purchases.objects.all()
     serializer_class = PurchaseSerializer
-    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+    permission_classes = (IsAuthenticated, Obj_IsOwnerOrAdmin)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user, token=uuid.uuid4())
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the purchases
+        for the currently authenticated user.
+        """
+        user = self.request.user
+        if user.is_superuser:
+            return Purchases.objects.all()
+        return Purchases.objects.filter(user=user)
