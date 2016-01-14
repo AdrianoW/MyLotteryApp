@@ -1,5 +1,8 @@
 package br.com.awa.mylottery;
 
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
@@ -7,16 +10,23 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import br.com.awa.mylottery.backends.MyLotteryBackend;
+
 
 public class PreloadActivity extends AppCompatActivity {
 
-    private MediaPlayer mPlayer;
     private static String LOG_TAG = PreloadActivity.class.getSimpleName();
+    private AccountManager mAccountManager;
+    private String mAccountType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preload);
+
+        // get the account manager and the account type
+        mAccountManager = AccountManager.get(this);
+        mAccountType = getString(R.string.authenticator_account_type);
 
         // play the sound and wait a little to show info
         new LoadViewTask().execute();
@@ -74,25 +84,48 @@ public class PreloadActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             // go for the next activity
-            Intent intent = getNextActivityIntent();
-            startActivity(intent);
-            finish();
+            goToNextActivity();
         }
 
         /*
         *  Decide where to go based on being logged or not
         * */
-        private Intent getNextActivityIntent()
+        private void goToNextActivity()
         {
-            boolean logged = Utility.getPreferredLocation(getApplicationContext());
+//            boolean logged = Utility.getPreferredLocation(getApplicationContext());
+//
+//            // check if the client is logged
+//            if (logged == true) {
+//                return new Intent(getApplicationContext(), HomeActivity.class);
+//            } else {
+//                // client is logged, go for the main screen
+//                return new Intent(getApplicationContext(), LoginActivity.class);
+//            }
+            // check if there is an account created
+            final AccountManagerFuture<Bundle> future = mAccountManager.getAuthTokenByFeatures(
+                    mAccountType, MyLotteryBackend.getInstance().ACCOUNT_ACESS, null,
+                    PreloadActivity.this, null, null,
+                    new AccountManagerCallback<Bundle>() {
+                        @Override
+                        public void run(AccountManagerFuture<Bundle> future) {
+                            Bundle bnd = null;
+                            try {
+                                bnd = future.getResult();
+                                MyLotteryBackend.getInstance().setToken(bnd.getString(AccountManager.KEY_AUTHTOKEN));
 
-            // check if the client is logged
-            if (logged == true) {
-                return new Intent(getApplicationContext(), HomeActivity.class);
-            } else {
-                // client is logged, go for the main screen
-                return new Intent(getApplicationContext(), LoginActivity.class);
-            }
+                                //showMessage(((authtoken != null) ? "SUCCESS!\ntoken: " + authtoken : "FAIL"));
+                                Log.d(LOG_TAG, "GetTokenForAccount Bundle is " + bnd);
+
+                                // starts the app
+                                startActivity(new Intent(getApplicationContext(), HomeActivity.class));
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                finish();
+                            }
+                        }
+                    }
+                    , null);
         }
     }
 

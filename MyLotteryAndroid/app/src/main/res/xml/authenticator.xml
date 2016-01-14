@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <account-authenticator xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accountType="br.com.awa.mylottery"
+    android:accountType="@string/authenticator_account_type"
     android:icon="@drawable/ic_sync_black_24dp"
     android:smallIcon="@drawable/ic_notifications_black_24dp"
     android:label="@string/authenticator_account_name"

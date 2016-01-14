@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -27,8 +26,8 @@ public class AvailableCouponDetail extends AppCompatActivity {
             }
         });*/
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.available_coupon_detail_toolbar);
-        setSupportActionBar(toolbar);
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.available_coupon_detail_toolbar);
+        //setSupportActionBar(toolbar);
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
@@ -47,9 +46,9 @@ public class AvailableCouponDetail extends AppCompatActivity {
             AvailableCouponDetailFragment fragment = new AvailableCouponDetailFragment();
             fragment.setArguments(arguments);
 
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.available_coupon_detail_container, fragment)
-                    .commit();
+            //getSupportFragmentManager().beginTransaction()
+            //        .add(R.id.available_coupon_detail_container, fragment)
+            //        .commit();
         }
     }
 

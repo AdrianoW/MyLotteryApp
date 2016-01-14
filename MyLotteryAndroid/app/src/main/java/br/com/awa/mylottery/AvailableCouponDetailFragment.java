@@ -2,7 +2,6 @@ package br.com.awa.mylottery;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,10 +32,10 @@ public class AvailableCouponDetailFragment extends Fragment {
             mItem = DummyContent.ITEM_MAP.get(getArguments().getString(COUPON_ID));
 
             Activity activity = this.getActivity();
-            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.available_coupon_toolbar_layout);
-            if (appBarLayout != null) {
-                appBarLayout.setTitle(mItem.content);
-            }
+            //CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.available_coupon_toolbar_layout);
+            //if (appBarLayout != null) {
+            //    appBarLayout.setTitle(mItem.content);
+            //}
         }
     }
     @Override

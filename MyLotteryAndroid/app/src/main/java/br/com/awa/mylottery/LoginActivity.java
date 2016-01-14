@@ -1,24 +1,26 @@
 package br.com.awa.mylottery;
 
+import android.accounts.Account;
+import android.accounts.AccountAuthenticatorActivity;
+import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.ContentResolver;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build.VERSION;
 import android.os.Build;
+import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -33,7 +35,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,27 +49,18 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends AccountAuthenticatorActivity implements LoaderCallbacks<Cursor> {
 
     /**
      * Id to identity READ_CONTACTS permission request.
      */
     private static final int REQUEST_READ_CONTACTS = 0;
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
     public static final String ARG_ACCOUNT_TYPE = "ACCOUNT_TYPE";
     public static final String ARG_AUTH_TYPE = "AUTH_TYPE";
     public static final String ARG_IS_ADDING_NEW_ACCOUNT = "IS_ADDING_ACCOUNT";
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private UserLoginTask mAuthTask = null;
+    public final static String PARAM_USER_PASS = "USER_PASS";
+    private static final int REQ_SIGNUP = 1;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -78,11 +70,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mRegisterView;
 
     public static final String TAG = MyLotteryBackend.class.getSimpleName();
+    private AccountManager mAccountManager;
+    private String mAuthTokenType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        // get the Account manager
+        mAccountManager = AccountManager.get(getBaseContext());
+        mAuthTokenType = getIntent().getStringExtra(ARG_AUTH_TYPE);
+
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
@@ -115,13 +114,162 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mRegisterButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-                startActivity(intent);
+                // Since there can only be one AuthenticatorActivity, we call the sign up activity, get his results,
+                // and return them in setAccountAuthenticatorResult(). See finishLogin().
+                Intent signup = new Intent(getBaseContext(), RegisterActivity.class);
+                signup.putExtras(getIntent().getExtras());
+                startActivityForResult(signup, REQ_SIGNUP);
             }
         });
 
         // register context to the Backend
         MyLotteryBackend.getInstance().setContext(getApplicationContext());
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        // The sign up activity returned that the user has successfully created an account
+        if (requestCode == REQ_SIGNUP && resultCode == RESULT_OK) {
+            finishLogin(data);
+        } else
+            super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    /**
+     * Attempts to sign in or register the account specified by the login form.
+     * If there are form errors (invalid email, missing fields, etc.), the
+     * errors are presented and no actual login attempt is made.
+     */
+    private void attemptLogin() {
+
+        // Reset errors.
+        mEmailView.setError(null);
+        mPasswordView.setError(null);
+
+        // Store values at the time of the login attempt.
+        final String email = mEmailView.getText().toString();
+        final String password = mPasswordView.getText().toString();
+        final String accountType = getIntent().getStringExtra(ARG_ACCOUNT_TYPE);
+
+        boolean cancel = false;
+        View focusView = null;
+
+        // Check for a valid password, if the user entered one.
+        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+            mPasswordView.setError(getString(R.string.error_invalid_password));
+            focusView = mPasswordView;
+            cancel = true;
+        }
+
+        // Check for a valid email address.
+        if (TextUtils.isEmpty(email)) {
+            mEmailView.setError(getString(R.string.error_field_required));
+            focusView = mEmailView;
+            cancel = true;
+        } else if (!isEmailValid(email)) {
+            mEmailView.setError(getString(R.string.error_invalid_email));
+            focusView = mEmailView;
+            cancel = true;
+        }
+
+        if (cancel) {
+            // There was an error; don't attempt login and focus the first
+            // form field with an error.
+            focusView.requestFocus();
+        } else {
+            // Show a progress spinner, and kick off a background task to
+            // perform the user login attempt.
+            showProgress(true);
+
+
+            //mAuthTask = new UserLoginTask(email, password);
+            //mAuthTask.execute((Void) null);
+            MyLotteryBackend.getInstance().login(email, password, new MyLotteryBackend.VolleyCallback() {
+                @Override
+                public void onResponse(JSONObject result) {
+                    Log.d(TAG, result.toString());
+
+                    Bundle data = new Bundle();
+                    try {
+                        // Parsing json object response
+                        // response will be a json object
+                        showProgress(false);
+
+                        // get the returned token
+                        String token = result.getString("key");
+
+                        // create a bundle to to be used on account creation
+                        data.putString(AccountManager.KEY_ACCOUNT_NAME, email);
+                        data.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
+                        data.putString(AccountManager.KEY_AUTHTOKEN, token);
+                        data.putString(PARAM_USER_PASS, password);
+
+                        final Intent res = new Intent();
+                        res.putExtras(data);
+                        finishLogin(res);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getApplicationContext(),
+                                "Error: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+
+                }
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    showProgress(false);
+
+                    String errorMessage = new String(error.networkResponse.data);
+
+                    Log.d(TAG, "Error: " + error.networkResponse.statusCode + errorMessage);
+                    Toast.makeText(getApplicationContext(),
+                            errorMessage, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private boolean isEmailValid(String email) {
+        //TODO: Replace this with your own logic
+        return email.contains("@");
+    }
+
+    private boolean isPasswordValid(String password) {
+        //TODO: Replace this with your own logic
+        return password.length() > 4;
+    }
+
+    private void finishLogin(Intent intent) {
+        Log.d("udinic", TAG + "> finishLogin");
+
+        // get the account name, password to create and account
+        String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+        String accountPassword = intent.getStringExtra(PARAM_USER_PASS);
+        final Account account = new Account(accountName, intent.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE));
+
+        // if there is the need to create the account
+        if (getIntent().getBooleanExtra(ARG_IS_ADDING_NEW_ACCOUNT, false)) {
+            // we came from the register screen
+            Log.d("udinic", TAG + "> finishLogin > addAccountExplicitly");
+            String authtoken = intent.getStringExtra(AccountManager.KEY_AUTHTOKEN);
+            String authtokenType = mAuthTokenType;
+
+            // Creating the account on the device and setting the auth token we got
+            // (Not setting the auth token will cause another call to the server to authenticate the user)
+            mAccountManager.addAccountExplicitly(account, accountPassword, null);
+            mAccountManager.setAuthToken(account, authtokenType, authtoken);
+        } else {
+            // just a login
+            Log.d("udinic", TAG + "> finishLogin > setPassword");
+            mAccountManager.setPassword(account, accountPassword);
+        }
+
+        setAccountAuthenticatorResult(intent.getExtras());
+        setResult(RESULT_OK, intent);
+        finish();
     }
 
     private void populateAutoComplete() {
@@ -171,120 +319,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 populateAutoComplete();
             }
         }
-    }
-
-
-    /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
-     */
-    private void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
-
-        // Reset errors.
-        mEmailView.setError(null);
-        mPasswordView.setError(null);
-
-        // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
-        String password = mPasswordView.getText().toString();
-
-        boolean cancel = false;
-        View focusView = null;
-
-        // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
-            focusView = mPasswordView;
-            cancel = true;
-        }
-
-        // Check for a valid email address.
-        /*if (TextUtils.isEmpty(email)) {
-            mEmailView.setError(getString(R.string.error_field_required));
-            focusView = mEmailView;
-            cancel = true;
-        } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = mEmailView;
-            cancel = true;
-        }*/
-
-        if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
-            focusView.requestFocus();
-        } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            showProgress(true);
-
-
-            //mAuthTask = new UserLoginTask(email, password);
-            //mAuthTask.execute((Void) null);
-            MyLotteryBackend.getInstance().login(email, password, new MyLotteryBackend.VolleyCallback() {
-                @Override
-                public void onResponse(JSONObject result) {
-                    Log.d(TAG, result.toString());
-
-                    try {
-                        // Parsing json object response
-                        // response will be a json object
-                        mAuthTask = null;
-                        showProgress(false);
-
-                        String token = result.getString("key");
-
-                        if (null != token) {
-                            // save the token information into the account
-
-                            // go for the home activity
-                            Intent home = new Intent(LoginActivity.this, HomeActivity.class);
-                            startActivity(home);
-
-                            // kill this activity, so that it is not in back button anymore
-                            finish();
-
-                        } else {
-                            mPasswordView.setError(getString(R.string.error_incorrect_password));
-                            mPasswordView.requestFocus();
-                        }
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(),
-                                "Error: " + e.getMessage(),
-                                Toast.LENGTH_LONG).show();
-
-                    }
-                }
-
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    mAuthTask = null;
-                    showProgress(false);
-
-                    String errorMessage = new String(error.networkResponse.data);
-
-                    Log.d(TAG, "Error: " + error.networkResponse.statusCode + errorMessage);
-                    Toast.makeText(getApplicationContext(),
-                            errorMessage, Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    }
-
-    private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
-        return email.contains("@");
-    }
-
-    private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 4;
     }
 
     /**
@@ -403,69 +437,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         protected void onPostExecute(List<String> emailAddressCollection) {
             addEmailsToAutoComplete(emailAddressCollection);
-        }
-    }
-
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mEmail;
-        private final String mPassword;
-
-        UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
-
-            // TODO: register the new account here.
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (success) {
-                // go for the home activity
-                Intent home = new Intent(LoginActivity.this, HomeActivity.class);
-                startActivity(home);
-
-                // kill this activity, so that it is not in back button anymore
-                finish();
-
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
         }
     }
 }

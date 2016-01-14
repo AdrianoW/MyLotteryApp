@@ -28,18 +28,26 @@ public class MyLotteryBackend {
 
     public static final String TAG = MyLotteryBackend.class.getSimpleName();
     private Context mContext;
+    private String mToken;
 
     public static MyLotteryBackend getInstance() {
         return ourInstance;
     }
 
     private static String URL_BASE = "http://10.0.2.2:8000/api/";
+    public static String ACCOUNT_ACESS = "User Access";
 
     private MyLotteryBackend() {
     }
 
     public void setContext(Context context) {
         mContext = context;
+    }
+    public void setToken(String token) {
+        mToken = token;
+    }
+    public String getToken() {
+        return mToken;
     }
 
     private RequestQueue getRequestQueue() {
@@ -85,6 +93,48 @@ public class MyLotteryBackend {
         try {
             jsonBody.put("email", email);
             jsonBody.put("password", password);
+        }catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        // create volley json req
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
+                url, jsonBody, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+                callback.onResponse(response);
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                callback.onErrorResponse(error);
+            }
+
+        });
+
+        // Adding request to request queue
+        Log.d(TAG, "Rodando Queue");
+        addToRequestQueue(jsonObjReq);
+    }
+
+    /*
+    * Register method
+    * @ params:
+    * @ email: user name to login
+    * @ password1: password first time
+    * @ password2: password second time
+    * @ callback: implements interface VolleyCallback
+    */
+    public void register(String email, String password, final VolleyCallback callback) {
+        // define the endpoint url and create the json body
+        String url = URL_BASE + "rest-auth/registration/";
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("email", email);
+            jsonBody.put("password1", password);
+            jsonBody.put("password2", password);
         }catch (JSONException e) {
             e.printStackTrace();
         }

@@ -1,11 +1,13 @@
 package br.com.awa.mylottery;
 
+import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.ContentResolver;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -21,6 +23,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,9 +33,19 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.VolleyError;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import br.com.awa.mylottery.backends.MyLotteryBackend;
+import static br.com.awa.mylottery.LoginActivity.PARAM_USER_PASS;
+import static br.com.awa.mylottery.LoginActivity.ARG_ACCOUNT_TYPE;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -53,6 +66,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "foo@example.com:hello", "bar@example.com:world"
     };
+    private static final String TAG = RegisterActivity.class.getSimpleName();
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -62,11 +76,13 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     private View mLoginFormView;
     private EditText mName;
     private TextView mTerms;
+    private String mAccountType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.register_email);
         populateAutoComplete();
@@ -100,6 +116,8 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
 
         mLoginFormView = findViewById(R.id.register_form);
         mProgressView = findViewById(R.id.register_progress);
+
+        mAccountType = getIntent().getStringExtra(ARG_ACCOUNT_TYPE);
     }
 
     private void populateAutoComplete() {
@@ -158,14 +176,13 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
-        String password = mPasswordView.getText().toString();
+        final String email = mEmailView.getText().toString();
+        final String password = mPasswordView.getText().toString();
         String passwordConfirm = mPasswordConfirmView.getText().toString();
         String userName = mName.getText().toString();
 
@@ -212,6 +229,51 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             showProgress(true);
             //mAuthTask = new UserLoginTask(userName, password, email);
             //mAuthTask.execute((Void) null);
+            MyLotteryBackend.getInstance().register(email, password, new MyLotteryBackend.VolleyCallback() {
+                @Override
+                public void onResponse(JSONObject result) {
+                    Log.d(TAG, result.toString());
+
+                    try {
+                        // Parsing json object response
+                        // response will be a json object
+                        showProgress(false);
+
+                        // get the returned token
+                        String token = result.getString("key");
+
+                        // create a bundle to to be used on account creation
+                        Bundle data = new Bundle();
+                        data.putString(AccountManager.KEY_ACCOUNT_NAME, email);
+                        data.putString(AccountManager.KEY_ACCOUNT_TYPE, mAccountType);
+                        data.putString(AccountManager.KEY_AUTHTOKEN, token);
+                        data.putString(PARAM_USER_PASS, password);
+
+                        final Intent res = new Intent();
+                        res.putExtras(data);
+                        setResult(RESULT_OK, res);
+                        finish();
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getApplicationContext(),
+                                "Error: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+
+                    }
+                }
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    showProgress(false);
+
+                    String errorMessage = new String(error.networkResponse.data);
+
+                    Log.d(TAG, "Error: " + error.networkResponse.statusCode + errorMessage);
+                    Toast.makeText(getApplicationContext(),
+                            errorMessage, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
@@ -223,6 +285,12 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
         return password.length() > 4;
+    }
+
+    @Override
+    public void onBackPressed() {
+        setResult(RESULT_CANCELED);
+        super.onBackPressed();
     }
 
     /**
