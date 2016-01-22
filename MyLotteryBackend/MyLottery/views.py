@@ -25,7 +25,7 @@ class TicketsViewSet(ModelViewSet):
     """
     queryset = Tickets.objects.all()
     serializer_class = TicketsSerializer
-    permission_classes = (IsAuthenticated, Obj_IsOwnerOrAdmin)
+    permission_classes = (IsAuthenticated, Vw_IsAdminOrReadOnly)
 
 
 class PurchasesViewSet(ModelViewSet):

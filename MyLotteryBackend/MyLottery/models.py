@@ -122,7 +122,6 @@ class Tickets(models.Model):
     campaign = models.ForeignKey('Campaigns', related_name='tickets')
     type = models.ForeignKey('StatusTypes')
     status = models.ForeignKey('StatusTickets')
-    purchase = models.ForeignKey('Purchases', null=True, blank=True, default='')
 
     def __unicode__(self):
         return '%d - da campanha: %s' % (self.id, self.campaign)
@@ -130,8 +129,8 @@ class Tickets(models.Model):
 
 class Purchases(models.Model):
     # the fields
-    ticket = models.ForeignKey('Tickets', related_name='purchases')
-    user = models.ForeignKey('auth.User', related_name='purchases')
+    ticket = models.ForeignKey('Tickets', related_name='purchase')
+    #user = models.ForeignKey('auth.User', related_name='user')
     date = models.DateTimeField(auto_now_add=True)
     method = models.ForeignKey('StatusMethods')
     token = models.CharField(max_length=45, blank=False)
