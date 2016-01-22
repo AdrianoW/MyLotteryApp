@@ -167,6 +167,14 @@ public class LoginActivity extends AccountAuthenticatorActivity {
             // perform the user login attempt.
             showProgress(true);
 
+            // check if it is connected before trying to call
+            if (!Utility.isOnline(getApplicationContext())) {
+                // show the message to the user
+                //Log.d(TAG, "Error: " + error.networkResponse.statusCode + errorMessage);
+                Toast.makeText(getApplicationContext(),
+                        "Not connected to the network. Please verify!", Toast.LENGTH_LONG).show();
+                return;
+            }
 
             //mAuthTask = new UserLoginTask(email, password);
             //mAuthTask.execute((Void) null);
@@ -211,11 +219,18 @@ public class LoginActivity extends AccountAuthenticatorActivity {
                                 public void onErrorResponse(VolleyError error) {
                                     showProgress(false);
 
-                                    String errorMessage = new String(error.networkResponse.data);
+                                    // check if it is an error that came from the server
+                                    String errorMessage;
+                                    if (error.networkResponse != null) {
+                                        errorMessage =  error.networkResponse.statusCode + new String(error.networkResponse.data);
+                                    } else {
+                                        errorMessage = error.getMessage();
+                                    }
 
-                                    Log.d(TAG, "Error: " + error.networkResponse.statusCode + errorMessage);
+                                    // show the message to the user
+                                    Log.d(TAG, "Error: " + errorMessage);
                                     Toast.makeText(getApplicationContext(),
-                                            errorMessage, Toast.LENGTH_SHORT).show();
+                                            errorMessage, Toast.LENGTH_LONG).show();
                                 }
                             });
         }
