@@ -7,8 +7,8 @@ from MyLottery.models import Campaigns, Tickets, Purchases
 from MyLottery.serializers import CampaignsSerializer, TicketsSerializer, \
     PurchaseSerializer
 from MyLottery.permissions import *
-
 import uuid
+
 
 class CampaignViewSet(ModelViewSet):
     """

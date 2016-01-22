@@ -23,7 +23,6 @@ class CampaignsSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'prize_a', 'prize_b', 'prize_c', 'status', 'tickets')
 
 
-#class TicketsSerializer(serializers.HyperlinkedModelSerializer):
 class TicketsSerializer(serializers.ModelSerializer):
     """
     Serialize the tickets for REST
@@ -37,7 +36,6 @@ class TicketsSerializer(serializers.ModelSerializer):
     purchase = serializers.PrimaryKeyRelatedField(queryset=Purchases.objects.all(), many=True)
 
     # campaign information
-    #campaign = serializers.HyperlinkedRelatedField(view_name='campaigns-detail', queryset=Campaigns.objects.all())
     campaign = serializers.PrimaryKeyRelatedField(queryset=Campaigns.objects.all())
 
     class Meta:
@@ -55,7 +53,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
     # define additional fields resolutions
     # foreign as a strings
     method = serializers.PrimaryKeyRelatedField(queryset=StatusMethods.objects.all())
-    user = serializers.ReadOnlyField(source='user.email')
+    user = serializers.SerializerMethodField(source='get_alternate_name')
     status = serializers.PrimaryKeyRelatedField(queryset=StatusPurchases.objects.all())
 
     # ticket information
@@ -69,4 +67,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
         Definitions of the models used
         """
         model = Purchases
-        fields = ('ticket', 'user', 'date', 'method', 'token', 'status')
+        fields = ('id', 'ticket', 'user', 'date', 'method', 'token', 'status')
+
+    def get_user(self, obj):
+        return obj.user.email or 'Username:'+obj.user.username
