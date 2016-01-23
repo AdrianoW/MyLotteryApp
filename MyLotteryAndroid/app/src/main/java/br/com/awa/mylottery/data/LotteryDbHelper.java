@@ -22,15 +22,15 @@ public class LotteryDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         // command to create the tables
-        final String SQL_CREATE_AVAILABLE_TABLE = "CREATE TABLE" + LotteryContract.Available.TABLE_NAME +
-                "(" +
-                LotteryContract.Available._ID + " INTEGER PRIMARY KEY" +
-                LotteryContract.Available.COLUMN_NAME + " TEXT UNIQUE NOT NULL" +
-                LotteryContract.Available.COLUMN_PRIZE_A + " TEXT NOT NULL" +
-                LotteryContract.Available.COLUMN_PRIZE_B + " TEXT" +
-                LotteryContract.Available.COLUMN_PRIZE_C + " TEXT" +
-                LotteryContract.Available.COLUMN_STATUS + " TEXT" +
-                ")";
+        final String SQL_CREATE_AVAILABLE_TABLE = "CREATE TABLE " + LotteryContract.Available.TABLE_NAME +
+                " (" +
+                LotteryContract.Available._ID + " INTEGER PRIMARY KEY, " +
+                LotteryContract.Available.COLUMN_NAME + " TEXT UNIQUE NOT NULL, " +
+                LotteryContract.Available.COLUMN_PRIZE_A + " TEXT NOT NULL, " +
+                LotteryContract.Available.COLUMN_PRIZE_B + " TEXT, " +
+                LotteryContract.Available.COLUMN_PRIZE_C + " TEXT, " +
+                LotteryContract.Available.COLUMN_STATUS + " TEXT " +
+                " )";
 
         // create the tables
         db.execSQL(SQL_CREATE_AVAILABLE_TABLE);

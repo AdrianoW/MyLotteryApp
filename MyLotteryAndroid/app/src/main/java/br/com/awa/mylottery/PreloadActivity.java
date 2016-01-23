@@ -87,7 +87,7 @@ public class PreloadActivity extends AppCompatActivity {
             // check if there is an account created
             final AccountManagerFuture<Bundle> future = mAccountManager
                     .getAuthTokenByFeatures(mAccountType,
-                            MyLotteryBackend.ACCOUNT_ACESS,
+                            MyLotteryBackend.TOKEN_ACCESS,
                             null,
                             PreloadActivity.this,
                             null,

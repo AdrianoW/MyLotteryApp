@@ -66,6 +66,15 @@ public class LotteryContract {
         // table name
         public static final String TABLE_NAME = "mycoupons";
 
+        // columns
+        public static final String COLUMN_CAMPAIGN= "campaign";
+        public static final String COLUMN_STATUS = "status";
+        public static final String COLUMN_METHOD = "method";
+        public static final String COLUMN_TOKEN = "token";
+        public static final String COLUMN_DATE = "date";
+        public static final String COLUMN_TICKET_ID = "ticket_id";
+        public static final String COLUMN_TICKET_STATUS = "ticket_status";
+
 
         public static Uri buildMyCouponUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
