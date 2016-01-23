@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import br.com.awa.mylottery.AvailableCouponsFragment.OnAvailableCouponsInteraction;
+import br.com.awa.mylottery.data.LotteryContract;
 
 /**
  * {@link RecyclerView.Adapter} that can display a item and makes a call to the
@@ -39,9 +40,8 @@ public class AvailableCouponsRecyclerViewAdapter extends RecyclerView.Adapter<Av
     public void onBindViewHolder(final ViewHolder holder, int position) {
         dataCursor.moveToPosition(position);
 
-        String id = String.valueOf(dataCursor.getInt(AvailableCouponsFragment.COL_AVAILABLE_ID));
+        final String id = String.valueOf(dataCursor.getInt(AvailableCouponsFragment.COL_AVAILABLE_ID));
         holder.mIdView.setText(id);
-
 
         holder.mContentView.setText(dataCursor.getString(AvailableCouponsFragment.COL_AVAILABLE_NAME));
 
@@ -51,7 +51,8 @@ public class AvailableCouponsRecyclerViewAdapter extends RecyclerView.Adapter<Av
                 if (null != mListener) {
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that an item has been selected.
-                    //mListener.onAvailableCouponsInteraction(holder);
+                    mListener.onAvailableCouponsInteraction(
+                            LotteryContract.Available.buildAvailableCouponUri(Long.parseLong(id)));
                 }
             }
         });

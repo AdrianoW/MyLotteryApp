@@ -164,6 +164,6 @@ public class AvailableCouponsFragment extends Fragment implements LoaderManager.
      */
     public interface OnAvailableCouponsInteraction {
         // TODO: Update argument type and name
-        void onAvailableCouponsInteraction();
+        void onAvailableCouponsInteraction(Uri idUri);
     }
 }

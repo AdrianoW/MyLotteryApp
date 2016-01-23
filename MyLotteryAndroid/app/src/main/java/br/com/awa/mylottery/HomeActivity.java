@@ -1,6 +1,7 @@
 package br.com.awa.mylottery;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -96,13 +97,12 @@ public class HomeActivity extends AppCompatActivity
     }
 
     @Override
-    public void onAvailableCouponsInteraction() {
-        /*Log.v("TESTE", item.content.toString());
+    public void onAvailableCouponsInteraction(Uri uriId) {
 
         // open the detail activity
         Intent availableDetail = new Intent(this, AvailableCouponDetail.class)
-                .putExtra( AvailableCouponDetail.PARAM_ID, item.id);
-        startActivity(availableDetail);*/
+                .putExtra( AvailableCouponDetail.PARAM_ID, uriId);
+        startActivity(availableDetail);
 
     }
 }
