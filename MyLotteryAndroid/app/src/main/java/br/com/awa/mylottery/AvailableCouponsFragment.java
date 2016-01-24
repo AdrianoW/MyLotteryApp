@@ -38,7 +38,7 @@ public class AvailableCouponsFragment extends Fragment implements LoaderManager.
     AvailableCouponsRecyclerViewAdapter mAdapter;
     private static final int COUPONS_LOADER = 0;
 
-    private static final String[] AVAILABLE_COLUMNS = {
+    public static final String[] AVAILABLE_COLUMNS = {
             // In this case the id needs to be fully qualified with a table name, since
             // the content provider joins the location & weather tables in the background
             // (both have an _id column)

@@ -55,19 +55,6 @@ public class HomeActivity extends AppCompatActivity
         // Setting the ViewPager For the SlidingTabsLayout
         tabs.setViewPager(pager);
 
-        //setContentView(R.layout.activity_home);
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
-
-        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
-
         // load the information
         LotterySyncAdapter.initializeSyncAdapter(this);
     }
@@ -101,7 +88,7 @@ public class HomeActivity extends AppCompatActivity
 
         // open the detail activity
         Intent availableDetail = new Intent(this, AvailableCouponDetail.class)
-                .putExtra( AvailableCouponDetail.PARAM_ID, uriId);
+                .setData(uriId);
         startActivity(availableDetail);
 
     }

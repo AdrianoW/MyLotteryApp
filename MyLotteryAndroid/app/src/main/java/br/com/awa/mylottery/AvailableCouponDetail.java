@@ -5,29 +5,19 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
 public class AvailableCouponDetail extends AppCompatActivity {
-
-    public static final String PARAM_ID = "PARAMID";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_available_coupon_detail);
 
-        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
-
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.available_coupon_detail_toolbar);
-        //setSupportActionBar(toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.available_coupon_detail_toolbar);
+        setSupportActionBar(toolbar);
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
@@ -40,15 +30,15 @@ public class AvailableCouponDetail extends AppCompatActivity {
             // using a fragment transaction.
 
             Bundle arguments = new Bundle();
-            arguments.putString(AvailableCouponDetailFragment.COUPON_ID,
-                                    getIntent().getStringExtra(AvailableCouponDetail.PARAM_ID));
+            arguments.putParcelable(AvailableCouponDetailFragment.COUPON_URI,
+                    getIntent().getData());
 
             AvailableCouponDetailFragment fragment = new AvailableCouponDetailFragment();
             fragment.setArguments(arguments);
 
-            //getSupportFragmentManager().beginTransaction()
-            //        .add(R.id.available_coupon_detail_container, fragment)
-            //        .commit();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.available_coupons_fragment, fragment)
+                    .commit();
         }
     }
 
