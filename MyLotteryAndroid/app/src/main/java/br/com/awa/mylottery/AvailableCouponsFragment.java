@@ -17,8 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import br.com.awa.mylottery.data.LotteryContract;
-//import br.com.awa.mylottery.dummy.DummyContent;
-//import br.com.awa.mylottery.dummy.DummyContent.DummyItem;
 
 /**
  * A fragment representing a list of Items.

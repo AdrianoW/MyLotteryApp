@@ -99,6 +99,9 @@ public class LotteryContract {
         public static final String COLUMN_TICKET_STATUS = "ticket_status";
         public static final String COLUMN_TICKET_TYPE = "ticket_type";
 
+        // made columns with query
+        public static final String COLUMN_CAMPAIGN_NAME = Available.COLUMN_NAME;
+
         public static Uri buildMyCouponUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }

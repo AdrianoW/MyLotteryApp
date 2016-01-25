@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
 public class LotteryProvider extends ContentProvider {
@@ -18,6 +19,22 @@ public class LotteryProvider extends ContentProvider {
 
 
     public LotteryProvider() {
+    }
+
+    // join campaign and tickets table to bring campaign name to screen
+    private static final SQLiteQueryBuilder sMyTicketCampaignQueryBuilder;
+    static{
+        sMyTicketCampaignQueryBuilder = new SQLiteQueryBuilder();
+
+        //This is an inner join which looks like
+        //weather INNER JOIN location ON weather.location_id = location._id
+        sMyTicketCampaignQueryBuilder.setTables(
+                LotteryContract.MyCoupons.TABLE_NAME + " INNER JOIN " +
+                        LotteryContract.Available.TABLE_NAME +
+                        " ON " + LotteryContract.MyCoupons.TABLE_NAME +
+                        "." + LotteryContract.MyCoupons.COLUMN_CAMPAIGN +
+                        " = " + LotteryContract.Available.TABLE_NAME +
+                        "." + LotteryContract.Available._ID);
     }
 
     static UriMatcher buildUriMatcher() {
@@ -165,8 +182,8 @@ public class LotteryProvider extends ContentProvider {
             }
             case MYCOUPONS_CODE: {
                 // return all available codes
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        LotteryContract.MyCoupons.TABLE_NAME,
+                retCursor = sMyTicketCampaignQueryBuilder.query(
+                        mOpenHelper.getReadableDatabase(),
                         projection,
                         selection,
                         selectionArgs,
@@ -180,8 +197,8 @@ public class LotteryProvider extends ContentProvider {
                 // return a single item.
                 // get the id from the Uri
                 String id = uri.getPathSegments().get(1);
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        LotteryContract.MyCoupons.TABLE_NAME,
+                retCursor = sMyTicketCampaignQueryBuilder.query(
+                        mOpenHelper.getReadableDatabase(),
                         projection,
                         LotteryContract.MyCoupons.sWhereID,
                         new String[]{id},

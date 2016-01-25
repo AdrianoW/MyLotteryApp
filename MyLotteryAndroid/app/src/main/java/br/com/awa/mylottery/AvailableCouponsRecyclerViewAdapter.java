@@ -79,7 +79,6 @@ public class AvailableCouponsRecyclerViewAdapter extends RecyclerView.Adapter<Av
         public final View mView;
         public final TextView mIdView;
         public final TextView mContentView;
-        //public DummyItem mItem;
 
         public ViewHolder(View view) {
             super(view);

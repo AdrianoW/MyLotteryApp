@@ -14,7 +14,8 @@ import br.com.awa.mylottery.sync.LotterySyncAdapter;
 //import br.com.awa.mylottery.dummy.DummyContent;
 
 public class HomeActivity extends AppCompatActivity
-        implements AvailableCouponsFragment.OnAvailableCouponsInteraction{
+        implements AvailableCouponsFragment.OnAvailableCouponsInteraction,
+                   MyCouponsFragment.OnListFragmentInteractionListener{
 
     // Declaring Your View and Variables
     Toolbar toolbar;
@@ -91,5 +92,13 @@ public class HomeActivity extends AppCompatActivity
                 .setData(uriId);
         startActivity(availableDetail);
 
+    }
+
+    @Override
+    public void onMyCouponsInteraction(Uri uriId) {
+        // open the detail activity
+        Intent availableDetail = new Intent(this, MyCouponDetail.class)
+                .setData(uriId);
+        startActivity(availableDetail);
     }
 }
