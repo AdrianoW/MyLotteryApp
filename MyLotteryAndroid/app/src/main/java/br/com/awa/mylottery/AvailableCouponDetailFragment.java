@@ -1,5 +1,6 @@
 package br.com.awa.mylottery;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,6 +21,8 @@ import com.android.volley.VolleyError;
 import org.json.JSONObject;
 
 import br.com.awa.mylottery.backends.MyLotteryBackend;
+import br.com.awa.mylottery.data.LotteryContract;
+import br.com.awa.mylottery.sync.LotterySyncAdapter;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -89,8 +92,26 @@ public class AvailableCouponDetailFragment extends Fragment implements LoaderMan
             public void onResponse(JSONObject result) {
                 Log.d(LOG_TAG, result.toString());
 
-                // TODO: redirect user to the ticket screen
+                try {
+                    int id = result.getInt("id");
+                    Uri uriId = LotteryContract.MyCoupons.buildMyCouponUri(
+                            Long.parseLong(String.valueOf(id)));
 
+                    // force a reload
+                    LotterySyncAdapter.syncImmediately(getContext(), LotterySyncAdapter.SYNC_MYCOUPONS);
+
+                    // TODO: redirect user to the ticket screen
+                    // open the detail activity
+                    Intent mycouponDetail = new Intent(getActivity(), MyCouponDetailActivity.class)
+                            .setData(uriId);
+                    startActivity(mycouponDetail);
+                    // show the message to the user
+                    Toast.makeText(getContext(),
+                            "Ticket was bought", Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return;
+                }
             }
 
             @Override

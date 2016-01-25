@@ -97,7 +97,7 @@ public class HomeActivity extends AppCompatActivity
     @Override
     public void onMyCouponsInteraction(Uri uriId) {
         // open the detail activity
-        Intent availableDetail = new Intent(this, MyCouponDetail.class)
+        Intent availableDetail = new Intent(this, MyCouponDetailActivity.class)
                 .setData(uriId);
         startActivity(availableDetail);
     }

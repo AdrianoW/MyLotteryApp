@@ -30,6 +30,10 @@ import br.com.awa.mylottery.data.LotteryContract;
  */
 public class LotterySyncAdapter extends AbstractThreadedSyncAdapter {
 
+    private static int SYNC_ALL = 0;
+    public static final int SYNC_MYCOUPONS = 1;
+    public static final int SYNC_AVAILABLE = 2;
+    private static final String SYNC_FLAG = "SYNC_FLAG";
     private final String LOG_TAG = LotterySyncAdapter.class.getSimpleName();
 
     // Interval at which to sync with the weather, in seconds.
@@ -54,11 +58,16 @@ public class LotterySyncAdapter extends AbstractThreadedSyncAdapter {
         // TODO: do not get all tickets, maybe just the new
         MyLotteryBackend.getInstance().setContext(mContext);
 
-        // sync available tickets
-        syncAvailableTickets();
+        int sync = extras.getInt(SYNC_FLAG);
+        if (sync==SYNC_ALL || sync==SYNC_AVAILABLE) {
+            // sync available tickets
+            syncAvailableTickets();
+        }
+        if (sync==SYNC_ALL || sync==SYNC_MYCOUPONS) {
+            // sync my coupons
+            syncMyCoupons();
+        }
 
-        // sync my coupons
-        syncMyCoupons();
     }
 
     private void syncAvailableTickets(){
@@ -233,10 +242,15 @@ public class LotterySyncAdapter extends AbstractThreadedSyncAdapter {
      * Helper method to have the sync adapter sync immediately
      * @param context The context used to access the account service
      */
-    public static void syncImmediately(Context context) {
+    public static void syncImmediately(Context context, int flagSync) {
+        
         Bundle bundle = new Bundle();
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+
+        if (flagSync==SYNC_ALL) {
+            bundle.putInt(SYNC_FLAG, flagSync);
+        }
         ContentResolver.requestSync(getSyncAccount(context),
                 context.getString(R.string.authenticator_account_type), bundle);
     }
@@ -297,10 +311,10 @@ public class LotterySyncAdapter extends AbstractThreadedSyncAdapter {
         /*
          * Finally, let's do a sync to get things started
          */
-        syncImmediately(context);
+        syncImmediately(context, SYNC_ALL);
     }
 
     public static void initializeSyncAdapter(Context context) {
-        syncImmediately(context);
+        syncImmediately(context, SYNC_ALL);
     }
 }
