@@ -5,6 +5,10 @@ import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by adriano on 22/01/16.
  */
@@ -19,6 +23,25 @@ public class LotteryContract {
     // the possible information that can be accessed in the provider
     public static final String PATH_AVAILABLE = "available";
     public static final String PATH_MYCOUPONS = "mycoupons";
+
+    // To make it easy to query for the exact date, we normalize all dates that go into
+    // the database to the start of the the Julian day at UTC.
+    public static int normalizeDate(String dtStart) {
+        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
+        Date date = null;
+        try {
+            date= format.parse(dtStart);
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return -1;
+        }
+
+        // convert to int
+        long inLong = date.getTime()/1000;
+        int inInt = (int) inLong;
+        return inInt;
+    }
 
     // the columns for the Available Coupons
     public static final class Available implements BaseColumns {
@@ -67,14 +90,14 @@ public class LotteryContract {
         public static final String TABLE_NAME = "mycoupons";
 
         // columns
-        public static final String COLUMN_CAMPAIGN= "campaign";
+        public static final String COLUMN_CAMPAIGN= "campaign_id";
         public static final String COLUMN_STATUS = "status";
         public static final String COLUMN_METHOD = "method";
         public static final String COLUMN_TOKEN = "token";
         public static final String COLUMN_DATE = "date";
         public static final String COLUMN_TICKET_ID = "ticket_id";
         public static final String COLUMN_TICKET_STATUS = "ticket_status";
-
+        public static final String COLUMN_TICKET_TYPE = "ticket_type";
 
         public static Uri buildMyCouponUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);

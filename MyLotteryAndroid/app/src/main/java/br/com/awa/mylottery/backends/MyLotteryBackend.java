@@ -43,6 +43,7 @@ public class MyLotteryBackend {
     private static String URL_BASE = "http://localhost:8000/api/";
     public static String TOKEN_ACCESS = "User Access";
     private static String PATH_AVAILABLE = "campaigns/";
+    private static String PATH_PURCHASES = "purchases/";
 
     private MyLotteryBackend() {
     }
@@ -108,26 +109,8 @@ public class MyLotteryBackend {
             e.printStackTrace();
         }
 
-        // create volley json req
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
-                url, jsonBody, new Response.Listener<JSONObject>() {
-
-            @Override
-            public void onResponse(JSONObject response) {
-                callback.onResponse(response);
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                callback.onErrorResponse(error);
-            }
-
-        });
-
-        // Adding request to request queue
-        Log.d(TAG, "Rodando Queue");
-        addToRequestQueue(jsonObjReq);
+        // make non authenticated request for an object
+        makeObjectRequest(Request.Method.POST, url, jsonBody, callback);
     }
 
     /*
@@ -150,8 +133,39 @@ public class MyLotteryBackend {
             e.printStackTrace();
         }
 
+        // make non authenticated request for an object
+        makeObjectRequest(Request.Method.POST, url, jsonBody, callback);
+    }
+
+    public void getAvailableTickets(final VolleyArrayCallback callback) {
+        // define the endpoint url and create the json body
+        String url = URL_BASE + PATH_AVAILABLE;
+
+        // make authenticated, array request
+        makeAuthenticatedArrayRequest(Request.Method.GET, url, null, callback);
+    }
+
+    public void buyTicket(int campaignId, final VolleyCallback callback) {
+        // define the endpoint url and create the json body
+        String url = URL_BASE + PATH_AVAILABLE + campaignId + "/buy/";
+
+        // make the request, post, authenticated
+        makeAuthenticatedObjectRequest(Request.Method.POST, url, null, callback);
+    }
+
+    public void getMyTickets(final VolleyArrayCallback callback) {
+        // define the endpoint url and create the json body
+        String url = URL_BASE + PATH_PURCHASES;
+
+        // make authenticated, array request
+        makeAuthenticatedArrayRequest(Request.Method.GET, url, null, callback);
+    }
+
+    private void makeObjectRequest(int verb, String url,
+                                   JSONObject jsonBody, final VolleyCallback callback) {
+
         // create volley json req
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(verb,
                 url, jsonBody, new Response.Listener<JSONObject>() {
 
             @Override
@@ -168,17 +182,49 @@ public class MyLotteryBackend {
         });
 
         // Adding request to request queue
-        Log.d(TAG, "Rodando Queue");
+        Log.d(TAG, "Making non-authenticated request " + url);
         addToRequestQueue(jsonObjReq);
+
     }
 
-    public void getAvailableTickets(final VolleyArrayCallback callback) {
-        // define the endpoint url and create the json body
-        String url = URL_BASE + PATH_AVAILABLE;
+    private void makeAuthenticatedObjectRequest(int verb, String url,
+                                                 JSONObject jsonBody, final VolleyCallback callback) {
 
         // create volley json req
-        JsonArrayRequest arrayRequest = new JsonArrayRequest(Request.Method.GET,
-                url, null, new Response.Listener<JSONArray>() {
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(verb,
+                url, jsonBody, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+                callback.onResponse(response);
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                callback.onErrorResponse(error);
+            }
+
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Authorization", "Token " + mToken);
+                return headers;
+            }
+        };
+
+        // Adding request to request queue
+        Log.d(TAG, "Making authenticated request " + url);
+        addToRequestQueue(jsonObjReq);
+
+    }
+
+    private void makeAuthenticatedArrayRequest(int verb, String url,
+                                               JSONArray jsonBody, final VolleyArrayCallback callback) {
+        // create volley json req
+        JsonArrayRequest arrayRequest = new JsonArrayRequest(verb,
+                url, jsonBody, new Response.Listener<JSONArray>() {
 
             @Override
             public void onResponse(JSONArray response) {
@@ -201,8 +247,9 @@ public class MyLotteryBackend {
         };
 
         // Adding request to request queue
-        Log.d(TAG, "Adding to sync queue available tickets");
+        Log.d(TAG, "Making authenticated array request " + url);
         addToRequestQueue(arrayRequest);
+
     }
 
 }

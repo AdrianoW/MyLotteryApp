@@ -250,7 +250,7 @@ public class LotteryProvider extends ContentProvider {
                 db.beginTransaction();
                 try {
                     for (ContentValues value : values) {
-                        long _id = db.insert(LotteryContract.Available.TABLE_NAME, null, value);
+                        long _id = db.insert(LotteryContract.MyCoupons.TABLE_NAME, null, value);
                         if (_id != -1) {
                             returnCount++;
                         }

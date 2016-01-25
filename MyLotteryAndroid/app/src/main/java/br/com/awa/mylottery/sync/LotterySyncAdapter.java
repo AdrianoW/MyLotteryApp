@@ -42,6 +42,7 @@ public class LotterySyncAdapter extends AbstractThreadedSyncAdapter {
     public LotterySyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
 
+        // save the context that is calling this
         mContext = context;
     }
 
@@ -52,6 +53,15 @@ public class LotterySyncAdapter extends AbstractThreadedSyncAdapter {
         // call the server to get available tickets.
         // TODO: do not get all tickets, maybe just the new
         MyLotteryBackend.getInstance().setContext(mContext);
+
+        // sync available tickets
+        syncAvailableTickets();
+
+        // sync my coupons
+        syncMyCoupons();
+    }
+
+    private void syncAvailableTickets(){
         MyLotteryBackend.getInstance().getAvailableTickets(new MyLotteryBackend.VolleyArrayCallback() {
             @Override
             public void onResponse(JSONArray result) {
@@ -62,7 +72,7 @@ public class LotterySyncAdapter extends AbstractThreadedSyncAdapter {
 
                 // for each campaign, create a content and insert into the vector
                 ContentValues availableItem;
-                for(int i = 0; i < result.length(); i++) {
+                for (int i = 0; i < result.length(); i++) {
                     try {
                         // get the content item from json
                         availableItem = createAvailableFromCampaign(result.getJSONObject(i));
@@ -93,7 +103,7 @@ public class LotterySyncAdapter extends AbstractThreadedSyncAdapter {
                 // check if it is an error that came from the server
                 String errorMessage;
                 if (error.networkResponse != null) {
-                    errorMessage =  error.networkResponse.statusCode + new String(error.networkResponse.data);
+                    errorMessage = error.networkResponse.statusCode + new String(error.networkResponse.data);
                 } else {
                     errorMessage = error.getMessage();
                 }
@@ -116,6 +126,83 @@ public class LotterySyncAdapter extends AbstractThreadedSyncAdapter {
             cv.put(LotteryContract.Available.COLUMN_PRIZE_C, jsonObj.getString("prize_c"));
             cv.put(LotteryContract.Available.COLUMN_STATUS, jsonObj.getInt("status"));
             cv.put(LotteryContract.Available._ID, jsonObj.getInt("id"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return cv;
+    }
+
+    private void syncMyCoupons() {
+        MyLotteryBackend.getInstance().getMyTickets(new MyLotteryBackend.VolleyArrayCallback() {
+            @Override
+            public void onResponse(JSONArray result) {
+                Log.d(LOG_TAG, result.toString());
+
+                // create content array
+                Vector<ContentValues> cVVector = new Vector<ContentValues>(result.length());
+
+                // for each purchase, create a content and insert into the vector
+                ContentValues myTickets;
+                for (int i = 0; i < result.length(); i++) {
+                    try {
+                        // get the content item from json
+                        myTickets = createMyCouponsFromPurchases(result.getJSONObject(i));
+
+                        // add to the vector
+                        if (null != myTickets) {
+                            cVVector.add(myTickets);
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                // delete all information
+                getContext().getContentResolver().delete(LotteryContract.MyCoupons.CONTENT_URI, null, null);
+
+                // bulk insert information
+                ContentValues[] cvArray = new ContentValues[cVVector.size()];
+                cVVector.toArray(cvArray);
+                int total = getContext().getContentResolver().bulkInsert(LotteryContract.MyCoupons.CONTENT_URI, cvArray);
+
+                Log.d(LOG_TAG, "My Coupons Sync Complete. " + total + " Inserted");
+            }
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // check if it is an error that came from the server
+                String errorMessage;
+                if (error.networkResponse != null) {
+                    errorMessage = error.networkResponse.statusCode + new String(error.networkResponse.data);
+                } else {
+                    errorMessage = error.getMessage();
+                }
+
+                // show the message to the user
+                Log.d(LOG_TAG, "Error: " + errorMessage);
+                Toast.makeText(mContext,
+                        errorMessage, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private ContentValues createMyCouponsFromPurchases(JSONObject jsonObj) {
+
+
+        ContentValues cv = new ContentValues();
+        try{
+            JSONObject ticket = jsonObj.getJSONObject("ticket");
+            cv.put(LotteryContract.MyCoupons.COLUMN_CAMPAIGN, ticket.getInt("campaign"));
+            cv.put(LotteryContract.MyCoupons.COLUMN_TICKET_ID, ticket.getInt("id"));
+            cv.put(LotteryContract.MyCoupons.COLUMN_TICKET_STATUS, ticket.getInt("status"));
+            cv.put(LotteryContract.MyCoupons.COLUMN_TICKET_TYPE, ticket.getInt("type"));
+            cv.put(LotteryContract.MyCoupons.COLUMN_DATE, LotteryContract.normalizeDate(jsonObj.getString("date")));
+            cv.put(LotteryContract.MyCoupons.COLUMN_METHOD, jsonObj.getInt("method"));
+            cv.put(LotteryContract.MyCoupons.COLUMN_TOKEN, jsonObj.getString("token"));
+            cv.put(LotteryContract.MyCoupons.COLUMN_STATUS, jsonObj.getInt("status"));
+            cv.put(LotteryContract.MyCoupons._ID, jsonObj.getInt("id"));
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -191,6 +278,8 @@ public class LotterySyncAdapter extends AbstractThreadedSyncAdapter {
 
             onAccountCreated(newAccount, context);
         }*/
+
+        //onAccountCreated(accounts[0], context);
         return accounts[0];
     }
 
