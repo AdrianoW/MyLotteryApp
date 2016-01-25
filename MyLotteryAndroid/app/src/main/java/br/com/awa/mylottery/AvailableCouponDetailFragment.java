@@ -10,7 +10,9 @@ import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import br.com.awa.mylottery.dummy.DummyContent;
 
@@ -23,7 +25,12 @@ public class AvailableCouponDetailFragment extends Fragment implements LoaderMan
     private static final int DETAIL_LOADER = 1000;
     private DummyContent.DummyItem mItem;
     private Uri mUri;
-    private TextView mTextView;
+    private TextView mTitle;
+    private TextView mPrize_a;
+    private TextView mPrize_b;
+    private TextView mPrize_c;
+    private TextView mStatus;
+    private Button mBuy;
 
     public AvailableCouponDetailFragment() {
     }
@@ -36,6 +43,7 @@ public class AvailableCouponDetailFragment extends Fragment implements LoaderMan
         if (arguments != null) {
             mUri = arguments.getParcelable(AvailableCouponDetailFragment.COUPON_URI);
         }
+
     }
 
     @Override
@@ -50,8 +58,21 @@ public class AvailableCouponDetailFragment extends Fragment implements LoaderMan
         View rootView = inflater.inflate(R.layout.fragment_available_coupon_detail, container, false);
 
         // save the views for later use
-        mTextView = (TextView) rootView.findViewById(R.id.available_coupon_test);
+        mTitle = (TextView) rootView.findViewById(R.id.available_coupon_detail_title);
+        mPrize_a = (TextView) rootView.findViewById(R.id.available_coupon_detail_prize_a);
+        mPrize_b = (TextView) rootView.findViewById(R.id.available_coupon_detail_prize_b);
+        mPrize_c = (TextView) rootView.findViewById(R.id.available_coupon_detail_prize_c);
+        mStatus = (TextView) rootView.findViewById(R.id.available_coupon_detail_status);
+        mBuy = (Button) rootView.findViewById(R.id.available_coupon_detail_buy_button);
 
+        // add a listener to the button
+        mBuy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast toast = Toast.makeText(getContext(), "Bought the ticket", Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
         return rootView;
     }
 
@@ -75,7 +96,11 @@ public class AvailableCouponDetailFragment extends Fragment implements LoaderMan
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data != null && data.moveToFirst()) {
-            mTextView.setText(data.getString(AvailableCouponsFragment.COL_AVAILABLE_NAME));
+            mTitle.setText(data.getString(AvailableCouponsFragment.COL_AVAILABLE_NAME));
+            mPrize_a.setText(data.getString(AvailableCouponsFragment.COL_AVAILABLE_PRIZE_A));
+            mPrize_b.setText(data.getString(AvailableCouponsFragment.COL_AVAILABLE_PRIZE_B));
+            mPrize_c.setText(data.getString(AvailableCouponsFragment.COL_AVAILABLE_PRIZE_C));
+            mStatus.setText(data.getString(AvailableCouponsFragment.COL_AVAILABLE_STATUS));
         }
     }
 

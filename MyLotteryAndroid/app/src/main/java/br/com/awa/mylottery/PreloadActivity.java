@@ -116,6 +116,9 @@ public class PreloadActivity extends AppCompatActivity {
                                 }
                             },
                             null);
+
+            // finish this activity
+            finish();
         }
     }
 }

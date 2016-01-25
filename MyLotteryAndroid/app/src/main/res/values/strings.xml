@@ -91,4 +91,5 @@
     <string name="title_activity_available_coupon_detail">AvailableCouponDetail</string>
     <string name="authenticator_account_name">My Lottery Account</string>
     <string name="authenticator_account_type">br.com.awa.mylottery</string>
+    <string name="available_coupon_detail_buy_button">Buy</string>
 </resources>

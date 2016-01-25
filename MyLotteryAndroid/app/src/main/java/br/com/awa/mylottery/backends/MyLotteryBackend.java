@@ -40,9 +40,9 @@ public class MyLotteryBackend {
         return ourInstance;
     }
 
-    private static String URL_BASE = "http://10.0.2.2:8000/api/";
+    private static String URL_BASE = "http://localhost:8000/api/";
     public static String TOKEN_ACCESS = "User Access";
-    private static String PATH_AVAILABLE = "campaigns";
+    private static String PATH_AVAILABLE = "campaigns/";
 
     private MyLotteryBackend() {
     }

@@ -37,7 +37,7 @@ public class AvailableCouponDetail extends AppCompatActivity {
             fragment.setArguments(arguments);
 
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.available_coupons_fragment, fragment)
+                    .replace(R.id.available_coupons_container, fragment)
                     .commit();
         }
     }
