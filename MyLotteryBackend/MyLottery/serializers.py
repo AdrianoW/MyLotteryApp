@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 from MyLottery.models import *
 from django.contrib.auth.models import User
@@ -79,7 +80,22 @@ class PurchaseSerializer(serializers.ModelSerializer):
         Definitions of the models used
         """
         model = Purchases
-        fields = ('id', 'ticket', 'user', 'date', 'method', 'token', 'status', 'ticket')
+        fields = ('id', 'ticket', 'user', 'date', 'method', 'token', 'status')
 
     def get_user(self, obj):
         return obj.user.email or 'Username:'+obj.user.username
+
+    def create(self, validated_data):
+        # save the purchase
+        try:
+            with transaction.atomic():
+                # save the ticket into the DB
+                ticket_data = validated_data.pop('ticket')
+                ticket = Tickets.objects.create(**ticket_data)
+
+                purchase = Purchases.objects.create(ticket=ticket, **validated_data)
+                return purchase
+        except Exception as e:
+            return None
+
+
