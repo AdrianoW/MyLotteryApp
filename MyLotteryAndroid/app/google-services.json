@@ -8,10 +8,10 @@
     {
       "client_info": {
         "mobilesdk_app_id": "1:441713686253:android:f36173e948059ccb",
-        "client_id": "android:gcm.play.android.samples.com.gcmquickstart",
+        "client_id": "android:br.com.awa.mylottery",
         "client_type": 1,
         "android_client_info": {
-          "package_name": "gcm.play.android.samples.com.gcmquickstart"
+          "package_name": "br.com.awa.mylottery"
         }
       },
       "oauth_client": [],

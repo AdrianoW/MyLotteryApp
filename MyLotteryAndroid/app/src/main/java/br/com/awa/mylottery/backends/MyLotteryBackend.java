@@ -161,6 +161,20 @@ public class MyLotteryBackend {
         makeAuthenticatedArrayRequest(Request.Method.GET, url, null, callback);
     }
 
+    public void saveGCMToken(String registration_id, final VolleyCallback callback) {
+        // define the endpoint url and create the json body
+        String url = URL_BASE + "gcm/";
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("registration_id", registration_id);
+        }catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        // save the token in the server for later communication
+        makeAuthenticatedObjectRequest(Request.Method.POST, url, jsonBody, callback);
+    }
+
     private void makeObjectRequest(int verb, String url,
                                    JSONObject jsonBody, final VolleyCallback callback) {
 
@@ -251,5 +265,7 @@ public class MyLotteryBackend {
         addToRequestQueue(arrayRequest);
 
     }
+
+
 
 }

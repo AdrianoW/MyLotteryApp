@@ -10,6 +10,7 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     buildTypes {
         debug {
@@ -22,7 +23,6 @@ android {
         all {
             buildConfigField 'String', 'ANDROID_CLIENT_ID', MyLotteryAndroidClientId
             buildConfigField 'String', 'ANDROID_CLIENT_KEY', MyLotteryAndroidClientKey
-
         }
     }
 
@@ -36,4 +36,7 @@ dependencies {
     compile 'com.android.support:design:23.1.1'
     compile 'com.android.support:support-v4:23.1.1'
     compile 'com.android.support:recyclerview-v7:23.1.1'
+    compile "com.google.android.gms:play-services-gcm:8.4.0"
 }
+
+apply plugin: 'com.google.gms.google-services'
