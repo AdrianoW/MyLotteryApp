@@ -2,7 +2,7 @@ import random
 
 from django.contrib.auth.models import User
 from django.db import connection
-from django.shortcuts import render
+from django.conf import settings
 
 # register views for user data
 from rest_framework import status
@@ -67,21 +67,27 @@ class CampaignViewSet(ModelViewSet):
             return Response({"error": "No tickets on Campaign %s" %pk}, status=HTTP_400_BAD_REQUEST)
 
         # make the draw
-        draw = tickets[random.randint(0, num_tickets)]
+        draw = tickets[random.randint(0, num_tickets-1)]
 
         # get the wining ticket and save it as winner
         ticket = Tickets.objects.get(pk=draw[0])
-        winner = User.objects.get(pk=draw[2])
+        winner = User.objects.get(pk= 7) #draw[2])
+
+        # TODO:change all tickets states, campaign to reflect the owner
 
         # send the owner the message
-        registration_id = GCMTokens.objects.get(user=winner)
-        if registration_id:
-            send_gcm(registration_id, 'You are the winner of the Lottery %s', campaign.name)
+        try:
+            gcm = GCMTokens.objects.get(user=winner)
+            send_gcm(gcm.registration_id, 'You are the winner of the Lottery %s' % campaign.name)
 
-        # send email too
+        except:
+            # TODO: send email
+            None
 
-        # finish confirming the winner
-        return Response({'winner': winner, 'ticket': ticket}, status=status.HTTP_200_OK)
+        finally:
+            # finish confirming the winner
+            return Response({'winner_ticket': winner.email or winner.get_username(),
+                             'winner_user': ticket.id}, status=status.HTTP_200_OK)
 
 
 def send_gcm(registration_id, message):
@@ -92,10 +98,8 @@ def send_gcm(registration_id, message):
     :param message: message to be sent
     :return:
     """
-    gcm = GCM()
+    gcm = GCM(settings.GCM_SERVER_ID)
     data = {'message': message}
-
-    reg_id = registration_id
 
     gcm.plaintext_request(registration_id=registration_id, data=data)
 

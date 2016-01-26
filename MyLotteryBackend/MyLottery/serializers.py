@@ -115,10 +115,12 @@ class GCMTokenSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # make sure there is only one id per user
         user = validated_data.get('user')
-        gcm = GCMTokens.objects.get(user=user)
-        if gcm:
+        try:
+            gcm = GCMTokens.objects.get(user=user)
             gcm.registration_id = validated_data.get('registration_id')
             gcm.save()
             return gcm
+        except GCMTokens.DoesNotExist:
+            return super(GCMTokenSerializer, self).create(validated_data=validated_data)
         else:
-            GCMTokens(**validated_data)
+            return None
