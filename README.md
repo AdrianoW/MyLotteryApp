@@ -2,7 +2,7 @@
 
 This app will control a lottery where the administrator will create raffles and the users can buy tickets.
 
-The administrators than will draw a ticket from the boughted giving the prize to the winner. 
+The administrators than will draw a ticket from the bought giving the prize to the winner. 
 
 The App is composed of a Backend Server, written in Django Rest - Python and a Mobile Client for Android.
 
