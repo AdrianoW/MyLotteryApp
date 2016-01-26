@@ -99,3 +99,26 @@ class PurchaseSerializer(serializers.ModelSerializer):
             return None
 
 
+class GCMTokenSerializer(serializers.ModelSerializer):
+    """
+    Store the Android token for the user so that we can send him messages through GCM
+    """
+    user = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GCMTokens
+        fields = ('user', "registration_id")
+
+    def get_user(self, obj):
+        return obj.user.email or 'Username:'+obj.user.username
+
+    def create(self, validated_data):
+        # make sure there is only one id per user
+        user = validated_data.get('user')
+        gcm = GCMTokens.objects.get(user=user)
+        if gcm:
+            gcm.registration_id = validated_data.get('registration_id')
+            gcm.save()
+            return gcm
+        else:
+            GCMTokens(**validated_data)

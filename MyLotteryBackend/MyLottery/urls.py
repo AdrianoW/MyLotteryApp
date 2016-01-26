@@ -7,6 +7,7 @@ router = DefaultRouter()
 router.register(r'campaigns', views.CampaignViewSet)
 router.register(r'tickets', views.TicketsViewSet)
 router.register(r'purchases', views.PurchasesViewSet)
+router.register(r'gcm', views.GCMTokenViewSet)
 
 # register the router
 # for the available checkpoints on user creation check

@@ -39,23 +39,19 @@ class Vw_IsAdminOrReadOnly(permissions.BasePermission):
         # return if is user is superuser
         return request.user.is_superuser == True
 
-class Vw_IsOwnerOrAdmin(permissions.BasePermission):
-    """
-    Object permission to see the object and only edit if the user is an admin
-    """
-
-    def has_permission(self, request, view):
-        # Read permissions are allowed to any request,
-        # so we'll always allow GET, HEAD or OPTIONS requests.
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        # return if is user is superuser
-        return request.user.is_superuser == True
-
 
 class Vw_IsAuthenticatedOrCreate(permissions.IsAuthenticated):
     def has_permission(self, request, view):
         if request.method == 'POST':
             return True
-        return super(IsAuthenticatedOrCreate, self).has_permission(request, view)
+        return super(Vw_IsAuthenticatedOrCreate, self).has_permission(request, view)
+
+
+class Vw_IsAdminOrPostOnly(permissions.IsAuthenticated):
+    """
+    View permission. Will enable to post and will only enable read if admin
+    """
+    def has_permission(self, request, view):
+        if request.method in ('POST', 'PUT', 'PATCH'):
+            return True
+        return request.user and request.user.is_staff

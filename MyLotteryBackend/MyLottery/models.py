@@ -138,3 +138,10 @@ class Purchases(models.Model):
 
     def __unicode__(self):
         return '%d - Nr ticket: %s' % (self.id, self.ticket_id)
+
+
+class GCMTokens(models.Model):
+    # the fields
+    user = models.ForeignKey('auth.User', related_name='gcmtokens')
+    registration_id = models.CharField(max_length=154)
+

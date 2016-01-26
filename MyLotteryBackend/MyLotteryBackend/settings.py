@@ -169,3 +169,6 @@ REST_FRAMEWORK = {
 #         'oauth2_provider.ext.rest_framework.OAuth2Authentication',
 #     ),
 # }
+
+# Google GCM Server ID
+GCM_SERVER_ID = "AIzaSyD6srrW1Vsp6lzRdvm0ruYgBCiupqhpgxk"
